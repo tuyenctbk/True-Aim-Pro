@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Deep Immersive Obsidian Gaming Canvas -->
+    <path
+        android:fillColor="#090412"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Radiant Cyber Violet Ambient Glow Backdrop -->
+    <path
+        android:fillColor="#190B2E"
+        android:pathData="M0,0 L108,0 L108,108 Z" />
+
+    <!-- Sub-Glow Scope Ring -->
+    <path
+        android:strokeColor="#251245"
+        android:strokeWidth="1.2"
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-48,0a48,48 0,1,1 96,0a48,48 0,1,1 -96,0" />
+
+    <!-- Outer Tech Concentric Radar Scope (66dp Safe Area Guide) -->
+    <path
+        android:strokeColor="#3A1C6E"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-38,0a38,38 0,1,1 76,0a38,38 0,1,1 -76,0" />
+
+    <!-- Inner Core Radar Shimmer -->
+    <path
+        android:strokeColor="#5B3AA3"
+        android:strokeWidth="0.8"
+        android:fillColor="#140A26"
+        android:pathData="M54,54m-26,0a26,26 0,1,1 52,0a26,26 0,1,1 -52,0" />
+
+    <!-- Tactical HUD Crosshair Coordinate Grids -->
+    <path
+        android:strokeColor="#3A1C6E"
+        android:strokeWidth="0.8"
+        android:pathData="M4,54 L104,54 M54,4 L54,104" />
+
+    <!-- Scope Corner Bracket Micro Tech details -->
+    <path
+        android:strokeColor="#5B3AA3"
+        android:strokeWidth="1"
+        android:pathData="M24,24 L20,24 L20,20 M84,20 L88,20 L88,24 M88,84 L88,88 L84,88 M20,88 L16,88 L16,84" />
+
+</vector>

@@ -1,0 +1,6 @@
+{
+  "name": "TrueAim Pro",
+  "description": "100% Free & Ad-Free Custom Crosshair HUD and Aim Overlay for Mobile Shooter Games",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
