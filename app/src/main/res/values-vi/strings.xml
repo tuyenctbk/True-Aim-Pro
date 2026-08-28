@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Studio</string>
     <string name="nav_presets">Mẫu Tâm</string>
     <string name="nav_guides_settings">Hướng Dẫn &amp; Cài Đặt</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">Khôi Phục Cài Đặt Gốc</string>
     <string name="reset_desc">Đặt lại kiểu tâm, kích thước, màu sắc về mặc định</string>
     <string name="permission_required">Cần Quyền Hiển Thị Trên Ứng Dụng Khác</string>
-    <string name="permission_desc">Cho phép Crosshair Pro vẽ tâm ngắm đè lên các game bắn súng.</string>
+    <string name="permission_desc">Cho phép TrueAim Pro vẽ tâm ngắm đè lên các game bắn súng.</string>
     <string name="grant_permission">Cấp Quyền Ngay</string>
     <string name="onboarding_skip">Bỏ qua</string>
     <string name="onboarding_next">Tiếp theo</string>

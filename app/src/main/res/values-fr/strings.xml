@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Studio</string>
     <string name="nav_presets">Préréglages</string>
     <string name="nav_guides_settings">Guides &amp; Paramètres</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">Réinitialiser aux Paramètres d’Usine</string>
     <string name="reset_desc">Restaure le style, la taille et les couleurs par défaut</string>
     <string name="permission_required">Autorisation de Superposition Requise</string>
-    <string name="permission_desc">Autorisez Crosshair Pro à s’afficher par-dessus vos jeux.</string>
+    <string name="permission_desc">Autorisez TrueAim Pro à s’afficher par-dessus vos jeux.</string>
     <string name="grant_permission">Accorder l’Autorisation</string>
     <string name="onboarding_skip">Passer</string>
     <string name="onboarding_next">Suivant</string>

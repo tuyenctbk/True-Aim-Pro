@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Studio</string>
     <string name="nav_presets">Vorlagen</string>
     <string name="nav_guides_settings">Anleitungen &amp; Einstell.</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">Auf Werkseinstellungen zurücksetzen</string>
     <string name="reset_desc">Setzt Stil, Größe und Farben zurück</string>
     <string name="permission_required">Overlay-Berechtigung erforderlich</string>
-    <string name="permission_desc">Erlaube Crosshair Pro über anderen Apps zu zeichnen.</string>
+    <string name="permission_desc">Erlaube TrueAim Pro über anderen Apps zu zeichnen.</string>
     <string name="grant_permission">Berechtigung erteilen</string>
     <string name="onboarding_skip">Überspringen</string>
     <string name="onboarding_next">Weiter</string>

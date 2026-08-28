@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Estudio</string>
     <string name="nav_presets">Ajustes</string>
     <string name="nav_guides_settings">Guías y Ajustes</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">Restablecer Valores de Fábrica</string>
     <string name="reset_desc">Restaura el estilo, tamaño y colores por defecto</string>
     <string name="permission_required">Permiso de Superposición Requerido</string>
-    <string name="permission_desc">Permite a Crosshair Pro mostrar la mira sobre otros juegos.</string>
+    <string name="permission_desc">Permite a TrueAim Pro mostrar la mira sobre otros juegos.</string>
     <string name="grant_permission">Otorgar Permiso</string>
     <string name="onboarding_skip">Omitir</string>
     <string name="onboarding_next">Siguiente</string>

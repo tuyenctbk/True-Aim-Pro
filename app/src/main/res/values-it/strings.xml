@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Studio</string>
     <string name="nav_presets">Preimpostazioni</string>
     <string name="nav_guides_settings">Guide e Impostazioni</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">Reset to Factory Default</string>
     <string name="reset_desc">Restores reticle style, size, color and opacity to defaults</string>
     <string name="permission_required">Overlay Permission Required</string>
-    <string name="permission_desc">Allow Crosshair Pro to draw over other apps to display the HUD in games.</string>
+    <string name="permission_desc">Allow TrueAim Pro to draw over other apps to display the HUD in games.</string>
     <string name="grant_permission">Grant Permission</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_next">Next</string>

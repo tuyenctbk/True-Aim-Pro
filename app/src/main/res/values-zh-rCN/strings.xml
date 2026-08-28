@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Crosshair Pro</string>
+    <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">工坊</string>
     <string name="nav_presets">预设</string>
     <string name="nav_guides_settings">指南与设置</string>
@@ -56,7 +56,7 @@
     <string name="reset_to_default">恢复出厂默认设置</string>
     <string name="reset_desc">重置准星样式、尺寸和颜色为默认状态</string>
     <string name="permission_required">需要悬浮窗权限</string>
-    <string name="permission_desc">允许 Crosshair Pro 在其他应用上层绘制准星。</string>
+    <string name="permission_desc">允许 TrueAim Pro 在其他应用上层绘制准星。</string>
     <string name="grant_permission">授予权限</string>
     <string name="onboarding_skip">跳过</string>
     <string name="onboarding_next">下一步</string>
