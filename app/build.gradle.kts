@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
   alias(libs.plugins.android.application)
@@ -24,18 +26,17 @@ android {
   }
 
   signingConfigs {
-    create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+    val keystorePropertiesFile = rootProject.file("local.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+      FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
     }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+
+    create("release") {
+      storeFile = keystoreProperties["release.storeFile"]?.toString()?.let { file(it) }
+      storePassword = keystoreProperties["release.storePassword"]?.toString()
+      keyAlias = keystoreProperties["release.keyAlias"]?.toString()
+      keyPassword = keystoreProperties["release.keyPassword"]?.toString()
     }
   }
 
@@ -46,7 +47,9 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      signingConfig = signingConfigs.getByName("debug")
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
