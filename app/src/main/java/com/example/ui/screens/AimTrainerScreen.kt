@@ -48,7 +48,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -262,7 +264,7 @@ fun AimTrainerScreen(
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "REFLEX AIM DRILL",
+                                text = stringResource(R.string.reflex_aim_drill_title),
                                 color = Color.White,
                                 fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold,
@@ -270,7 +272,7 @@ fun AimTrainerScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Test your reticle contrast and response speed in a 20-second target drill.",
+                                text = stringResource(R.string.reflex_aim_drill_desc),
                                 color = Color.White.copy(alpha = 0.8f),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
@@ -280,7 +282,7 @@ fun AimTrainerScreen(
 
                             // Difficulty Picker Pills
                             Text(
-                                text = "DIFFICULTY",
+                                text = stringResource(R.string.difficulty_label),
                                 color = MinimalPurpleLight,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -333,7 +335,7 @@ fun AimTrainerScreen(
                                 Icon(Icons.Default.PlayArrow, contentDescription = null)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "START DRILL",
+                                    text = stringResource(R.string.start_drill_btn),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -393,7 +395,7 @@ fun StatsHudBar(stats: com.example.ui.AimGameStats) {
             // Score
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "SCORE",
+                    text = stringResource(R.string.score_label),
                     color = TextTertiary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -426,7 +428,7 @@ fun StatsHudBar(stats: com.example.ui.AimGameStats) {
             // Reaction Time
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "AVG REACTION",
+                    text = stringResource(R.string.avg_reaction_label),
                     color = TextTertiary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -471,7 +473,7 @@ fun SummaryScoreCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "DRILL COMPLETE",
+                text = stringResource(R.string.drill_complete_title),
                 color = TextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -511,10 +513,10 @@ fun SummaryScoreCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem(label = "Accuracy", value = "$accuracy%")
-                StatItem(label = "Reaction", value = "${stats.avgReactionTimeMs}ms")
-                StatItem(label = "Headshots", value = "${stats.headshots}")
-                StatItem(label = "Best Streak", value = "${stats.bestStreak}x")
+                StatItem(label = stringResource(R.string.stat_accuracy), value = "$accuracy%")
+                StatItem(label = stringResource(R.string.stat_reaction), value = "${stats.avgReactionTimeMs}ms")
+                StatItem(label = stringResource(R.string.stat_headshots), value = "${stats.headshots}")
+                StatItem(label = stringResource(R.string.stat_best_streak), value = "${stats.bestStreak}x")
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -534,7 +536,7 @@ fun SummaryScoreCard(
                 Icon(Icons.Default.Refresh, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "PLAY AGAIN",
+                    text = stringResource(R.string.play_again_btn),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )

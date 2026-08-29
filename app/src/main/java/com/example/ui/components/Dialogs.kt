@@ -94,7 +94,7 @@ fun SavePresetDialog(
         },
         title = {
             Text(
-                text = "Save Game Preset",
+                text = stringResource(R.string.save_game_preset_title),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -103,7 +103,7 @@ fun SavePresetDialog(
         text = {
             Column {
                 Text(
-                    text = "Save your custom reticle configuration to quickly switch between games.",
+                    text = stringResource(R.string.save_game_preset_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
@@ -130,7 +130,7 @@ fun SavePresetDialog(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "TARGET GAME / CATEGORY",
+                    text = stringResource(R.string.target_game_category),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -301,7 +301,7 @@ fun ShareCrosshairDialog(
         },
         title = {
             Text(
-                text = "Export & Share Crosshair",
+                text = stringResource(R.string.export_share_title),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -313,7 +313,7 @@ fun ShareCrosshairDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Share this crosshair setup with your squad or export as JSON string for community sharing.",
+                    text = stringResource(R.string.export_share_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     lineHeight = 16.sp
@@ -340,7 +340,7 @@ fun ShareCrosshairDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Compact Code",
+                            text = stringResource(R.string.compact_code),
                             color = if (!exportFormatIsJson) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -357,7 +357,7 @@ fun ShareCrosshairDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "JSON Preset",
+                            text = stringResource(R.string.json_preset),
                             color = if (exportFormatIsJson) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -386,6 +386,8 @@ fun ShareCrosshairDialog(
 
                 // Export Text Box
                 val activeExportText = if (exportFormatIsJson) jsonString else code
+                val jsonCopiedMsg = stringResource(R.string.json_copied_toast)
+                val codeCopiedMsg = stringResource(R.string.code_copied_toast)
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -413,7 +415,7 @@ fun ShareCrosshairDialog(
                                 clipboardManager.setText(AnnotatedString(activeExportText))
                                 Toast.makeText(
                                     context,
-                                    if (exportFormatIsJson) "JSON preset copied to clipboard!" else "Crosshair code copied to clipboard!",
+                                    if (exportFormatIsJson) jsonCopiedMsg else codeCopiedMsg,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -431,14 +433,16 @@ fun ShareCrosshairDialog(
         },
         confirmButton = {
             val activeExportText = if (exportFormatIsJson) jsonString else code
+            val shareMsgFormat = stringResource(R.string.share_preset_message, activeExportText)
+            val shareTitle = stringResource(R.string.share_chooser_title)
             Button(
                 onClick = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, "Here is my Crosshair Pro preset:\n$activeExportText")
+                        putExtra(Intent.EXTRA_TEXT, shareMsgFormat)
                         type = "text/plain"
                     }
-                    val shareIntent = Intent.createChooser(sendIntent, "Share Crosshair Configuration")
+                    val shareIntent = Intent.createChooser(sendIntent, shareTitle)
                     context.startActivity(shareIntent)
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -453,7 +457,7 @@ fun ShareCrosshairDialog(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = if (exportFormatIsJson) "SHARE JSON" else "SHARE CODE", fontWeight = FontWeight.Bold)
+                Text(text = if (exportFormatIsJson) stringResource(R.string.share_json_btn) else stringResource(R.string.share_code_btn), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -498,7 +502,7 @@ fun ImportCrosshairDialog(
         },
         title = {
             Text(
-                text = "Import Crosshair Code",
+                text = stringResource(R.string.import_code_title),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -507,7 +511,7 @@ fun ImportCrosshairDialog(
         text = {
             Column {
                 Text(
-                    text = "Paste a TrueAim profile code (starts with 'TA;') to load the custom crosshair geometry and color.",
+                    text = stringResource(R.string.import_code_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     lineHeight = 16.sp
@@ -542,14 +546,16 @@ fun ImportCrosshairDialog(
             }
         },
         confirmButton = {
+            val invalidCodeMsg = stringResource(R.string.invalid_code_toast)
+            val importSuccessMsg = stringResource(R.string.import_success_toast)
             Button(
                 onClick = {
                     val success = onImport(inputCode)
                     if (!success) {
                         isError = true
-                        Toast.makeText(context, "Invalid code format", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, invalidCodeMsg, Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, "Reticle imported successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, importSuccessMsg, Toast.LENGTH_SHORT).show()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -595,7 +601,7 @@ fun BatteryOptimizationDialog(
         },
         title = {
             Text(
-                text = "Battery Optimization Whitelist",
+                text = stringResource(R.string.battery_whitelist_title),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -603,7 +609,7 @@ fun BatteryOptimizationDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Android battery optimization algorithms may automatically kill background overlay services during extended gameplay.",
+                    text = stringResource(R.string.battery_whitelist_desc),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -618,14 +624,14 @@ fun BatteryOptimizationDialog(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "How to whitelist TrueAim Pro:",
+                            text = stringResource(R.string.how_to_whitelist_title),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "1. Tap 'OPEN SETTINGS' below\n2. Filter list by 'All Apps'\n3. Set TrueAim Pro battery usage to 'Unrestricted' or 'Don't Optimize'",
+                            text = stringResource(R.string.how_to_whitelist_steps),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             lineHeight = 16.sp
@@ -635,6 +641,7 @@ fun BatteryOptimizationDialog(
             }
         },
         confirmButton = {
+            val batteryErrorMsg = stringResource(R.string.battery_error_toast)
             Button(
                 onClick = {
                     try {
@@ -645,7 +652,7 @@ fun BatteryOptimizationDialog(
                             val intent = Intent(Settings.ACTION_SETTINGS)
                             context.startActivity(intent)
                         } catch (ex: Exception) {
-                            Toast.makeText(context, "Could not open battery settings", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, batteryErrorMsg, Toast.LENGTH_SHORT).show()
                         }
                     }
                     onDismiss()

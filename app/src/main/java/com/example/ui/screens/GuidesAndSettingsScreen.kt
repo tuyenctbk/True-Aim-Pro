@@ -63,7 +63,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.CrosshairViewModel
@@ -449,13 +451,13 @@ fun SmartSensorControlsCard(
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "SMART SENSOR AUTOMATIONS",
+                        text = stringResource(R.string.smart_sensors_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Hardware sensor triggers for seamless gameplay",
+                        text = stringResource(R.string.smart_sensors_subtitle),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -466,8 +468,8 @@ fun SmartSensorControlsCard(
 
             SensorToggleRow(
                 icon = Icons.Default.VisibilityOff,
-                title = "Proximity Auto-Hide",
-                description = "Hides overlay when phone is face-down or near face",
+                title = stringResource(R.string.proximity_auto_hide),
+                description = stringResource(R.string.proximity_desc),
                 checked = usageStats.proximityAutoHideEnabled,
                 onCheckedChange = { viewModel.toggleProximityAutoHide(it) }
             )
@@ -476,8 +478,8 @@ fun SmartSensorControlsCard(
 
             SensorToggleRow(
                 icon = Icons.Default.LightMode,
-                title = "Ambient Light Auto-Opacity",
-                description = "Dims overlay in dark rooms; boosts brightness in direct sunlight",
+                title = stringResource(R.string.ambient_light_opacity),
+                description = stringResource(R.string.ambient_light_desc),
                 checked = usageStats.autoLightOpacityEnabled,
                 onCheckedChange = { viewModel.toggleAutoLightOpacity(it) }
             )
@@ -486,8 +488,8 @@ fun SmartSensorControlsCard(
 
             SensorToggleRow(
                 icon = Icons.Default.Vibration,
-                title = "Shake Intensity Auto-Off",
-                description = "Hides reticle during heavy shaking to avoid visual clutter",
+                title = stringResource(R.string.shake_auto_toggle),
+                description = stringResource(R.string.shake_desc),
                 checked = usageStats.shakeAutoToggleEnabled,
                 onCheckedChange = { viewModel.toggleShakeAutoToggle(it) }
             )
@@ -535,13 +537,13 @@ fun GlobalThemeToggleCard(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.padding(end = 8.dp)) {
                         Text(
-                            text = "GLOBAL THEME PROVIDER",
+                            text = stringResource(R.string.global_theme),
                             color = TextPrimary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (isDarkMode) "Dark Minimalism Theme active" else "Light Minimalism Canvas active",
+                            text = if (isDarkMode) stringResource(R.string.dark_theme) else stringResource(R.string.light_theme),
                             color = TextSecondary,
                             fontSize = 11.sp
                         )
@@ -653,13 +655,13 @@ fun ResetToDefaultsCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "RESET TO FACTORY DEFAULT",
+                        text = stringResource(R.string.reset_factory_default_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Revert style, size, opacity, and color back to standard defaults.",
+                        text = stringResource(R.string.reset_factory_default_desc),
                         color = TextSecondary,
                         fontSize = 11.sp,
                         lineHeight = 15.sp
@@ -669,10 +671,11 @@ fun ResetToDefaultsCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            val resetToast = stringResource(R.string.reset_factory_default_toast)
             Button(
                 onClick = {
                     onResetToDefaults()
-                    Toast.makeText(context, "Crosshair parameters reset to factory defaults!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resetToast, Toast.LENGTH_SHORT).show()
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MinimalPurple,
@@ -691,7 +694,7 @@ fun ResetToDefaultsCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "RESET ALL TO DEFAULT",
+                    text = stringResource(R.string.reset_all_default_btn),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -738,13 +741,13 @@ fun InteractiveWalkthroughBanner(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Getting Started Walkthrough",
+                        text = stringResource(R.string.walkthrough_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Step-by-step setup guide for in-game overlay",
+                        text = stringResource(R.string.walkthrough_subtitle),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -763,7 +766,7 @@ fun InteractiveWalkthroughBanner(
                     .height(34.dp)
                     .tvFocusable(RoundedCornerShape(12.dp), MinimalPurple)
             ) {
-                Text(text = "Replay", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.replay), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -787,7 +790,7 @@ fun AndroidTvGuideCard() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "ANDROID TV & CLOUD GAMING",
+                    text = stringResource(R.string.android_tv_title),
                     color = TextPrimary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -798,7 +801,7 @@ fun AndroidTvGuideCard() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Crosshair Pro includes a native Leanback TV launcher banner and full support for cloud gaming services (GeForce NOW, Xbox Cloud Gaming, Boosteroid) on Android TV and Google TV.",
+                text = stringResource(R.string.android_tv_desc),
                 color = TextSecondary,
                 fontSize = 11.sp,
                 lineHeight = 16.sp
@@ -834,14 +837,14 @@ fun NoAdsManifestoCard() {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "100% FREE & ZERO ADS",
+                        text = stringResource(R.string.no_ads_title),
                         color = MinimalPurpleDark,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = "No popup ads • No subscriptions • Pure gaming HUD",
+                        text = stringResource(R.string.no_ads_subtitle),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -851,7 +854,7 @@ fun NoAdsManifestoCard() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Unlike other crosshair apps that blast popups every 10 seconds, Crosshair Pro is built cleanly for the competitive mobile gaming community. Zero tracking, zero ads, zero battery hogging.",
+                text = stringResource(R.string.no_ads_desc),
                 color = TextPrimary,
                 fontSize = 12.sp,
                 lineHeight = 18.sp
@@ -889,7 +892,7 @@ fun PermissionStatusCard(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Overlay Permission",
+                        text = stringResource(R.string.overlay_permission_title),
                         color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -903,7 +906,7 @@ fun PermissionStatusCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (hasPermission) "GRANTED" else "REQUIRED",
+                        text = if (hasPermission) stringResource(R.string.overlay_permission_granted) else stringResource(R.string.overlay_permission_required),
                         color = if (hasPermission) MinimalGreen else LaserCrimson,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -914,7 +917,7 @@ fun PermissionStatusCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Android requires 'Display over other apps' permission so your custom crosshair can float transparently on top of your favorite games.",
+                text = stringResource(R.string.overlay_permission_desc),
                 color = TextSecondary,
                 fontSize = 12.sp,
                 lineHeight = 17.sp
@@ -938,7 +941,7 @@ fun PermissionStatusCard(
                     Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "GRANT OVERLAY ACCESS",
+                        text = stringResource(R.string.grant_overlay_access_btn),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -966,7 +969,7 @@ fun GameGuidesCard() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "OPTIMAL GAME SETTINGS",
+                    text = stringResource(R.string.optimal_game_settings_title),
                     color = TextPrimary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -1051,7 +1054,7 @@ fun FairPlayCard() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "SAFE & COMPLIANT OVERLAY",
+                    text = stringResource(R.string.safe_compliant_title),
                     color = TextPrimary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -1062,7 +1065,7 @@ fun FairPlayCard() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Crosshair Pro is a pure visual screen overlay tool. It does NOT modify game memory, inject code, alter network packets, or auto-aim. It simply provides an on-screen reference point just like physical monitor crosshairs.",
+                text = stringResource(R.string.safe_compliant_desc),
                 color = TextSecondary,
                 fontSize = 11.sp,
                 lineHeight = 17.sp

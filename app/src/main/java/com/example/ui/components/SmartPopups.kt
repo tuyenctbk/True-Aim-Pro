@@ -279,11 +279,11 @@ private fun shareAppWithSquad(context: Context) {
         action = Intent.ACTION_SEND
         putExtra(
             Intent.EXTRA_TEXT,
-            "Check out TrueAim Pro - Custom Crosshair & Aim Trainer overlay for Mobile Gamers! https://play.google.com/store/apps/details?id=${context.packageName}"
+            "${context.getString(R.string.share_app_text)} https://play.google.com/store/apps/details?id=${context.packageName}"
         )
         type = "text/plain"
     }
-    val shareIntent = Intent.createChooser(sendIntent, "Share TrueAim Pro")
+    val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.share_app_title))
     context.startActivity(shareIntent)
 }
 

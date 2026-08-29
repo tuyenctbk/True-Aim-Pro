@@ -49,11 +49,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.CrosshairConfig
+import com.example.R
 import com.example.ui.CrosshairViewModel
 import com.example.ui.components.CrosshairView
 import com.example.ui.theme.ArenaDarkCanvas
@@ -101,7 +103,7 @@ fun PresetsScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
-                placeholder = { Text("Search reticles & games...", fontSize = 13.sp, color = TextTertiary) },
+                placeholder = { Text(stringResource(R.string.search_presets_placeholder), fontSize = 13.sp, color = TextTertiary) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -156,7 +158,7 @@ fun PresetsScreen(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Import", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.btn_import), fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -390,9 +392,9 @@ fun PresetCard(
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Active", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.btn_active), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     } else {
-                        Text(text = "Equip", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        Text(text = stringResource(R.string.btn_equip), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
 

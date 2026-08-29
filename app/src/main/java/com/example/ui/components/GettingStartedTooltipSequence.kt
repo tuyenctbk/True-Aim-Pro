@@ -105,23 +105,23 @@ fun GettingStartedTooltipSequence(
     val steps = listOf(
         TooltipStep(
             stepNumber = 1,
-            title = "1. Enable 'Draw Over Other Apps'",
-            description = "Android requires permission to float your custom crosshair over games. Grant 'Display over other apps' to allow HUD projection.",
-            actionLabel = if (isOverlayPermissionGranted) "✓ Permission Enabled" else "Grant Permission",
+            title = stringResource(R.string.tooltip_step1_title),
+            description = stringResource(R.string.tooltip_step1_desc),
+            actionLabel = if (isOverlayPermissionGranted) stringResource(R.string.tooltip_step1_granted) else stringResource(R.string.tooltip_step1_grant),
             icon = Icons.Default.Security
         ),
         TooltipStep(
             stepNumber = 2,
-            title = "2. Customize Reticle & Color",
-            description = "Choose from 16+ styles (Dots, Circles, Crosses), customize hex colors in real-time, and set alpha transparency so targets stay clear.",
-            actionLabel = "Explore Reticle Gallery",
+            title = stringResource(R.string.tooltip_step2_title),
+            description = stringResource(R.string.tooltip_step2_desc),
+            actionLabel = stringResource(R.string.tooltip_step2_action),
             icon = Icons.Default.ColorLens
         ),
         TooltipStep(
             stepNumber = 3,
-            title = "3. Launch In-Game Overlay HUD",
-            description = "Flip the Master Switch to project the reticle on screen. Use the on-screen D-Pad to calibrate pixel alignment while in game.",
-            actionLabel = if (isOverlayActive) "✓ Overlay Running" else "Activate Floating HUD",
+            title = stringResource(R.string.tooltip_step3_title),
+            description = stringResource(R.string.tooltip_step3_desc),
+            actionLabel = if (isOverlayActive) stringResource(R.string.tooltip_step3_running) else stringResource(R.string.tooltip_step3_activate),
             icon = Icons.Default.Layers
         )
     )
@@ -164,14 +164,14 @@ fun GettingStartedTooltipSequence(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "GETTING STARTED GUIDE",
+                            text = stringResource(R.string.getting_started_guide),
                             color = MinimalPurpleDark,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp
                         )
                         Text(
-                            text = "Step ${currentStep + 1} of ${steps.size}",
+                            text = stringResource(R.string.guide_step_format, currentStep + 1, steps.size),
                             color = TextSecondary,
                             fontSize = 11.sp
                         )
@@ -401,12 +401,13 @@ fun InteractiveTargetTutorialOverlay(
         label = "pulseAlpha"
     )
 
-    val tutorialPoints = remember {
+    val context = LocalContext.current
+    val tutorialPoints = remember(context) {
         listOf(
-            Triple("1. Master Overlay Power", "Tap the top Master Switch to activate/deactivate the crosshair on top of all games.", Icons.Default.TouchApp),
-            Triple("2. Reticle Style Carousel", "Tap any reticle shape (Dot, Circle, Cross, Tactical) to switch crosshair geometry instant.", Icons.Default.Tune),
-            Triple("3. Dynamic Color Studio", "Tap the Hex code field or RGB sliders to match crosshair color with target backgrounds.", Icons.Default.ColorLens),
-            Triple("4. Alpha Transparency Control", "Slide the opacity bar from 10% to 100% so your target view is never blocked.", Icons.Default.Layers)
+            Triple(context.getString(R.string.tutorial_point1_title), context.getString(R.string.tutorial_point1_desc), Icons.Default.TouchApp),
+            Triple(context.getString(R.string.tutorial_point2_title), context.getString(R.string.tutorial_point2_desc), Icons.Default.Tune),
+            Triple(context.getString(R.string.tutorial_point3_title), context.getString(R.string.tutorial_point3_desc), Icons.Default.ColorLens),
+            Triple(context.getString(R.string.tutorial_point4_title), context.getString(R.string.tutorial_point4_desc), Icons.Default.Layers)
         )
     }
 
@@ -462,7 +463,7 @@ fun InteractiveTargetTutorialOverlay(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "TAP HERE TO ADJUST",
+                    text = stringResource(R.string.tutorial_tap_to_adjust),
                     color = MinimalPurpleDark,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -517,7 +518,7 @@ fun InteractiveTargetTutorialOverlay(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "SKIP", color = TextSecondary, fontSize = 11.sp)
+                        Text(text = stringResource(R.string.tutorial_skip), color = TextSecondary, fontSize = 11.sp)
                     }
 
                     Button(
@@ -536,7 +537,7 @@ fun InteractiveTargetTutorialOverlay(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = if (tutorialStep < tutorialPoints.size - 1) "NEXT TOUCH" else "FINISH",
+                            text = if (tutorialStep < tutorialPoints.size - 1) stringResource(R.string.tutorial_next_touch) else stringResource(R.string.tutorial_finish),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )

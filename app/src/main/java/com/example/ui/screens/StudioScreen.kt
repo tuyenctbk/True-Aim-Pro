@@ -75,7 +75,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import com.example.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -389,13 +391,13 @@ fun QuickPresetSaveBanner(
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "SAVE AS GAME PRESET",
+                        text = stringResource(R.string.save_as_game_preset_title),
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Save style, size & colors to switch games quickly",
+                        text = stringResource(R.string.save_as_game_preset_desc),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -412,7 +414,7 @@ fun QuickPresetSaveBanner(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                 modifier = Modifier.height(36.dp)
             ) {
-                Text(text = "Save", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.save_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -457,7 +459,7 @@ fun MasterOverlayCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isOverlayActive) "OVERLAY ACTIVE" else "OVERLAY OFF",
+                            text = if (isOverlayActive) stringResource(R.string.overlay_active_label) else stringResource(R.string.overlay_off_label),
                             color = if (isOverlayActive) MinimalPurpleDark else TextSecondary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -481,9 +483,9 @@ fun MasterOverlayCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = if (isOverlayActive)
-                            "Crosshair floating above your games • Touch pass-through"
+                            stringResource(R.string.overlay_active_desc)
                         else
-                            "Toggle to float custom reticle over games",
+                            stringResource(R.string.overlay_off_desc),
                         color = TextSecondary,
                         fontSize = 12.sp
                     )
@@ -526,7 +528,7 @@ fun MasterOverlayCard(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Floating Calibration HUD",
+                                text = stringResource(R.string.floating_calibration_hud),
                                 color = TextPrimary,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
@@ -545,7 +547,7 @@ fun MasterOverlayCard(
                                 .height(34.dp)
                                 .testTag("toggle_calibration_hud_btn")
                         ) {
-                            Text(text = "HUD Tool", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.hud_tool_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -589,7 +591,7 @@ fun GamePreviewStage(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "LIVE RETICLE PREVIEW",
+                        text = stringResource(R.string.live_reticle_preview_title),
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -690,7 +692,7 @@ fun GamePreviewStage(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "AIM TRAINER",
+                            text = stringResource(R.string.aim_trainer_btn),
                             color = NeonGreen,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -748,7 +750,7 @@ fun ReticleStyleSelector(
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "RETICLE SHAPE (16 STYLES)",
+            text = stringResource(R.string.reticle_shape_title),
             color = TextSecondary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
@@ -866,7 +868,7 @@ fun RealTimeColorStudioSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "COLOR PICKER & APPEARANCE",
+                        text = stringResource(R.string.color_picker_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -908,7 +910,7 @@ fun RealTimeColorStudioSection(
 
             // Pro Esports Swatches
             Text(
-                text = "ESPORTS PALETTE PRESETS",
+                text = stringResource(R.string.esports_palette_title),
                 color = TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -956,7 +958,7 @@ fun RealTimeColorStudioSection(
 
             // Real-Time Custom Hex Input Tool
             Text(
-                text = "REAL-TIME HEX COLOR INPUT",
+                text = stringResource(R.string.real_time_hex_title),
                 color = TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -1017,7 +1019,7 @@ fun RealTimeColorStudioSection(
 
             // Live RGB Fine-Tuning Sliders
             Text(
-                text = "RGB COLOR MIXER (REAL-TIME)",
+                text = stringResource(R.string.rgb_mixer_title),
                 color = TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -1068,13 +1070,13 @@ fun RealTimeColorStudioSection(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "High-Contrast Outline",
+                        text = stringResource(R.string.high_contrast_outline),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Crisp outline for visibility against sky & shadows",
+                        text = stringResource(R.string.outline_desc),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -1098,13 +1100,13 @@ fun RealTimeColorStudioSection(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Center Precision Dot",
+                        text = stringResource(R.string.center_precision_dot),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Hipfire reference dot in the exact center",
+                        text = stringResource(R.string.center_dot_desc),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -1128,13 +1130,13 @@ fun RealTimeColorStudioSection(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "T-Style Reticle (No Top Bar)",
+                        text = stringResource(R.string.t_style_reticle),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Unobstructed view for headshot tracking",
+                        text = stringResource(R.string.t_style_desc),
                         color = TextSecondary,
                         fontSize = 11.sp
                     )
@@ -1240,7 +1242,7 @@ fun AlphaTransparencySection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "ALPHA TRANSPARENCY (OPACITY)",
+                        text = stringResource(R.string.alpha_transparency_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -1266,7 +1268,7 @@ fun AlphaTransparencySection(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Adjust reticle transparency so target models and distance sights remain sharp without obscuring background gameplay.",
+                text = stringResource(R.string.alpha_transparency_desc),
                 color = TextSecondary,
                 fontSize = 11.sp,
                 lineHeight = 16.sp
@@ -1336,7 +1338,7 @@ fun GeometrySlidersSection(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "GEOMETRY & SIZING",
+                text = stringResource(R.string.geometry_sizing_title),
                 color = TextPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
@@ -1347,7 +1349,7 @@ fun GeometrySlidersSection(
 
             // Size Slider
             SliderRow(
-                label = "Reticle Size",
+                label = stringResource(R.string.reticle_size_label),
                 valueDisplay = "${config.sizeDp.toInt()} dp",
                 value = config.sizeDp,
                 range = 14f..90f,
@@ -1356,7 +1358,7 @@ fun GeometrySlidersSection(
 
             // Line Thickness
             SliderRow(
-                label = "Line Thickness",
+                label = stringResource(R.string.line_thickness_label),
                 valueDisplay = String.format("%.1f dp", config.thicknessDp),
                 value = config.thicknessDp,
                 range = 1f..10f,
@@ -1365,7 +1367,7 @@ fun GeometrySlidersSection(
 
             // Gap
             SliderRow(
-                label = "Center Gap",
+                label = stringResource(R.string.center_gap_label),
                 valueDisplay = "${config.gapDp.toInt()} dp",
                 value = config.gapDp,
                 range = 0f..35f,
@@ -1375,7 +1377,7 @@ fun GeometrySlidersSection(
             // Center Dot Size
             if (config.centerDot) {
                 SliderRow(
-                    label = "Dot Size",
+                    label = stringResource(R.string.dot_size_label),
                     valueDisplay = String.format("%.1f dp", config.centerDotSizeDp),
                     value = config.centerDotSizeDp,
                     range = 1f..12f,
@@ -1390,7 +1392,7 @@ fun GeometrySlidersSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Rotation (${config.rotationDeg.toInt()}°)",
+                    text = "${stringResource(R.string.rotation_label)} (${config.rotationDeg.toInt()}°)",
                     color = TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -1455,14 +1457,14 @@ fun CenterAlignmentSection(
             ) {
                 Column {
                     Text(
-                        text = "POSITION ALIGNMENT",
+                        text = stringResource(R.string.position_alignment_title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp
                     )
                     Text(
-                        text = "Offset: X=${config.offsetX}px, Y=${config.offsetY}px",
+                        text = "${stringResource(R.string.offset_label)}: X=${config.offsetX}px, Y=${config.offsetY}px",
                         color = MinimalPurple,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold
@@ -1484,7 +1486,7 @@ fun CenterAlignmentSection(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Center", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.center_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
