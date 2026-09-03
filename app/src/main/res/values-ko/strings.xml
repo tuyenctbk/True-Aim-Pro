@@ -3,6 +3,7 @@
     <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">스튜디오</string>
     <string name="nav_presets">프리셋</string>
+    <string name="nav_trainer">트레이너</string>
     <string name="nav_guides_settings">가이드 및 설정</string>
     <string name="studio_title">크로스헤어 스튜디오</string>
     <string name="studio_subtitle">커스텀 조준선 디자인, 미리보기 및 활성화</string>
@@ -247,4 +248,9 @@
     <string name="position_alignment_title">PIXEL OFFSET &amp; ALIGNMENT</string>
     <string name="offset_label">Offset:</string>
     <string name="center_btn">Center</string>
+    <string name="gallery_empty_search">\"%1$s\"에 일치하는 조준선이 없습니다</string>
+    <string name="gallery_empty_default">조준선을 찾을 수 없습니다</string>
+    <string name="gallery_empty_hint">다른 카테고리를 탐색하거나 스튜디오에서 맞춤 조준선을 저장하세요</string>
+    <string name="trainer_map_label">맵:</string>
+    <string name="trainer_crit_label">치명타</string>
 </resources>

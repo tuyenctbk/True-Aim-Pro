@@ -3,6 +3,7 @@
     <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">工坊</string>
     <string name="nav_presets">预设</string>
+    <string name="nav_trainer">练枪</string>
     <string name="nav_guides_settings">指南与设置</string>
     <string name="studio_title">准星工坊</string>
     <string name="studio_subtitle">设计、预览并开启自定义游戏准星</string>
@@ -247,4 +248,9 @@
     <string name="position_alignment_title">PIXEL OFFSET &amp; ALIGNMENT</string>
     <string name="offset_label">Offset:</string>
     <string name="center_btn">Center</string>
+    <string name="gallery_empty_search">没有与\"%1$s\"匹配的准星</string>
+    <string name="gallery_empty_default">未找到准星</string>
+    <string name="gallery_empty_hint">浏览其他分类或在工作室保存自定义准星</string>
+    <string name="trainer_map_label">地图：</string>
+    <string name="trainer_crit_label">暴击</string>
 </resources>

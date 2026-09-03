@@ -395,9 +395,10 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val appName = getString(R.string.app_name)
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Crosshair Pro Overlay",
+                "$appName Overlay",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Controls for floating game crosshair overlay"
@@ -441,11 +442,12 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val appName = getString(R.string.app_name)
         val activeName = repository.activeConfig.value.name
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Crosshair Pro: Active")
-            .setContentText("Current Reticle: $activeName (100% Free & No Ads)")
+            .setContentTitle("$appName: Active")
+            .setContentText("Active Reticle: $activeName")
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setContentIntent(openAppPendingIntent)
             .setOngoing(true)

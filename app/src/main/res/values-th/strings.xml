@@ -3,6 +3,7 @@
     <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">สตูดิโอ</string>
     <string name="nav_presets">ค่าที่ตั้งไว้</string>
+    <string name="nav_trainer">ฝึกเล็ง</string>
     <string name="nav_guides_settings">Guides &amp; Settings</string>
     <string name="studio_title">CROSSHAIR STUDIO</string>
     <string name="studio_subtitle">Design, preview and activate custom HUD reticles</string>
@@ -247,4 +248,9 @@
     <string name="position_alignment_title">PIXEL OFFSET &amp; ALIGNMENT</string>
     <string name="offset_label">Offset:</string>
     <string name="center_btn">Center</string>
+    <string name="gallery_empty_search">ไม่พบลายเป้าที่ตรงกับ \"%1$s\"</string>
+    <string name="gallery_empty_default">ไม่พบลายเป้า</string>
+    <string name="gallery_empty_hint">สำรวจหมวดหมู่อื่นหรือบันทึกเป้าเล็งในสตูดิโอ</string>
+    <string name="trainer_map_label">แผนที่:</string>
+    <string name="trainer_crit_label">คริติคอล</string>
 </resources>

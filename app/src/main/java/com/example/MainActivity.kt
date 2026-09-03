@@ -64,10 +64,11 @@ import com.example.ui.components.SavePresetDialog
 import com.example.ui.components.ShareCrosshairDialog
 import com.example.ui.components.SmartRateAppDialog
 import com.example.ui.components.SmartShareAppDialog
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.ui.screens.AimTrainerScreen
 import com.example.ui.screens.GuidesAndSettingsScreen
 import com.example.ui.screens.OnboardingScreen
-import com.example.ui.screens.PresetsScreen
 import com.example.ui.screens.StudioScreen
 import com.example.ui.theme.LaserCrimson
 import com.example.ui.theme.MinimalBorder
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
 enum class NavSection(val titleRes: Int, val icon: ImageVector) {
     STUDIO(R.string.nav_studio, Icons.Default.Tune),
     GALLERY(R.string.nav_presets, Icons.Default.GridView),
-    TRAINER(R.string.onboarding_slide3_title, Icons.Default.SportsEsports),
+    TRAINER(R.string.nav_trainer, Icons.Default.SportsEsports),
     GUIDES(R.string.nav_guides_settings, Icons.Default.Info)
 }
 
@@ -376,7 +377,10 @@ fun GamerNavRail(
                             text = titleStr,
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -487,8 +491,8 @@ fun BottomGamerNavBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .padding(vertical = 8.dp, horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             NavSection.values().forEachIndexed { index, section ->
@@ -497,10 +501,11 @@ fun BottomGamerNavBar(
 
                 Column(
                     modifier = Modifier
+                        .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
                         .clickable { onSelectIndex(index) }
                         .tvFocusable(RoundedCornerShape(16.dp), MaterialTheme.colorScheme.primary)
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                        .padding(horizontal = 4.dp, vertical = 4.dp)
                         .testTag("nav_tab_${section.name.lowercase()}"),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -522,8 +527,11 @@ fun BottomGamerNavBar(
                     Text(
                         text = titleStr,
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        fontSize = 10.5.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
                     )
                 }
             }

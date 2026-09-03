@@ -115,7 +115,7 @@ fun AimTrainerScreen(
                 modifier = Modifier.size(16.dp)
             )
             Text(
-                text = "Map:",
+                text = stringResource(R.string.trainer_map_label),
                 color = TextSecondary,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -227,7 +227,7 @@ fun AimTrainerScreen(
 
                         if (target.isHeadshotRing) {
                             Text(
-                                text = "CRIT",
+                                text = stringResource(R.string.trainer_crit_label),
                                 color = Color.Black,
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Black

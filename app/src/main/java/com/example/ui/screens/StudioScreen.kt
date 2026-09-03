@@ -194,51 +194,6 @@ fun StudioScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Crosshair Gallery Composable
-            com.example.ui.components.CrosshairGallery(
-                currentStyle = config.style,
-                onStyleSelected = { newStyle ->
-                    viewModel.updateConfig {
-                        it.copy(
-                            style = newStyle,
-                            tStyle = (newStyle == CrosshairStyle.T_SHAPE)
-                        )
-                    }
-                },
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Crosshair Style Settings Composable
-            com.example.ui.components.CrosshairStyleSettings(
-                config = config,
-                onSizeChange = { newSize ->
-                    viewModel.updateConfig { it.copy(sizeDp = newSize) }
-                },
-                onThicknessChange = { newThickness ->
-                    viewModel.updateConfig { it.copy(thicknessDp = newThickness) }
-                },
-                onGapChange = { newGap ->
-                    viewModel.updateConfig { it.copy(gapDp = newGap) }
-                },
-                onOpacityChange = { newOpacity ->
-                    viewModel.setAlphaOpacity(newOpacity)
-                },
-                onColorHexSelected = { colorHex ->
-                    viewModel.updateConfig { it.copy(primaryColorHex = colorHex) }
-                },
-                onCenterDotToggled = { dot ->
-                    viewModel.updateConfig { it.copy(centerDot = dot) }
-                },
-                onDotRadiusChange = { radius ->
-                    viewModel.updateConfig { it.copy(centerDotSizeDp = radius) }
-                },
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Quick Preset Save Action Card
             QuickPresetSaveBanner(
                 currentConfig = config,

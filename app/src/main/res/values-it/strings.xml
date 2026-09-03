@@ -3,6 +3,7 @@
     <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Studio</string>
     <string name="nav_presets">Preimpostazioni</string>
+    <string name="nav_trainer">Allenamento</string>
     <string name="nav_guides_settings">Guide e Impostazioni</string>
     <string name="studio_title">STUDIO RETICOLO</string>
     <string name="studio_subtitle">Progetta e attiva reticoli personalizzati</string>
@@ -247,4 +248,9 @@
     <string name="position_alignment_title">PIXEL OFFSET &amp; ALIGNMENT</string>
     <string name="offset_label">Offset:</string>
     <string name="center_btn">Center</string>
+    <string name="gallery_empty_search">Nessun mirino corrisponde a \"%1$s\"</string>
+    <string name="gallery_empty_default">Nessun mirino trovato</string>
+    <string name="gallery_empty_hint">Esplora altre categorie o salva mirini personalizzati in Studio</string>
+    <string name="trainer_map_label">Mappa:</string>
+    <string name="trainer_crit_label">CRIT</string>
 </resources>

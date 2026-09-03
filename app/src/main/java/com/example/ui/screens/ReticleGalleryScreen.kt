@@ -284,9 +284,9 @@ fun ReticleGalleryScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = if (searchQuery.isNotEmpty())
-                            "No Reticles Match \"$searchQuery\""
+                            stringResource(R.string.gallery_empty_search, searchQuery)
                         else
-                            "No Reticles found",
+                            stringResource(R.string.gallery_empty_default),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -294,7 +294,7 @@ fun ReticleGalleryScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Explore other categories or save custom crosshairs in Studio",
+                        text = stringResource(R.string.gallery_empty_hint),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center

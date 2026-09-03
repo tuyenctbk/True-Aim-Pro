@@ -3,6 +3,7 @@
     <string name="app_name">TrueAim Pro</string>
     <string name="nav_studio">Студио</string>
     <string name="nav_presets">Шаблони</string>
+    <string name="nav_trainer">Треньор</string>
     <string name="nav_guides_settings">Guides &amp; Settings</string>
     <string name="studio_title">CROSSHAIR STUDIO</string>
     <string name="studio_subtitle">Design, preview and activate custom HUD reticles</string>
@@ -247,4 +248,9 @@
     <string name="position_alignment_title">PIXEL OFFSET &amp; ALIGNMENT</string>
     <string name="offset_label">Offset:</string>
     <string name="center_btn">Center</string>
+    <string name="gallery_empty_search">Няма мерници, съответстващи на \"%1$s\"</string>
+    <string name="gallery_empty_default">Няма намерени мерници</string>
+    <string name="gallery_empty_hint">Разгледайте други категории или запазете мерници в Студио</string>
+    <string name="trainer_map_label">Карта:</string>
+    <string name="trainer_crit_label">КРИТ</string>
 </resources>
