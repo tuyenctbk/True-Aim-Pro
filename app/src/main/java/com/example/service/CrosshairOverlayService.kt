@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -709,7 +710,7 @@ fun PersistentFloatingQuickToggle(
             )
 
             Text(
-                text = if (isCrosshairVisible) "HUD ON" else "HUD OFF",
+                text = if (isCrosshairVisible) stringResource(R.string.hud_on) else stringResource(R.string.hud_off),
                 color = if (isCrosshairVisible) TextPrimary else TextSecondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
@@ -742,7 +743,7 @@ fun CalibrateFloatingWidget(
                 modifier = Modifier.width(220.dp)
             ) {
                 Text(
-                    text = "CALIBRATION HUD",
+                    text = stringResource(R.string.floating_calibration_hud),
                     color = MinimalPurple,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -824,7 +825,7 @@ fun CalibrateFloatingWidget(
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = "LOCK POSITION",
+                    text = stringResource(R.string.btn_lock_position),
                     color = Color.White,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold

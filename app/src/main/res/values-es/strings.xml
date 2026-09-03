@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Equipa la cruz verde clásica. Usa los botones de ajuste para alinearte a la altura de la cabeza para tiros perfectos.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Usa la mira en V o la caja de escopeta para un seguimiento a corta distancia sin bloquear la visión.</string>
+    <string name="hud_on">HUD ACTIVO</string>
+    <string name="hud_off">HUD INACTIVO</string>
+    <string name="btn_lock_position">FIJAR POSICIÓN</string>
 </resources>

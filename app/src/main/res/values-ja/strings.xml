@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">ネオングリーン十字レティクルを装備。微調整パッドでヘッドラインに合わせ、引き抜きヘッドショットを狙います。</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">高機動な近接戦トラッキングにはV字型やボックス型レティクルが視界を遮らず最適です。</string>
+    <string name="hud_on">HUD ON</string>
+    <string name="hud_off">HUD OFF</string>
+    <string name="btn_lock_position">位置を固定</string>
 </resources>

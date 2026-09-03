@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Équipez la croix classique vert fluo. Utilisez le pavé de réglage pour aligner à hauteur de tête.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Utilisez le réticule en V ou le cadre de fusil à pompe pour un suivi réactif au corps à corps sans masquer la vue.</string>
+    <string name="hud_on">HUD ACTIF</string>
+    <string name="hud_off">HUD INACTIF</string>
+    <string name="btn_lock_position">VERROUILLER</string>
 </resources>

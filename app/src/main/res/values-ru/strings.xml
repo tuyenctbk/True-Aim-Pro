@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Выберите классический зеленый крестик. Настройте высоту на уровень головы кнопками сдвига.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Используйте V-образный или рамочный прицел для ведения целей в ближнем динамичном бою.</string>
+    <string name="hud_on">HUD ВКЛ</string>
+    <string name="hud_off">HUD ВЫКЛ</string>
+    <string name="btn_lock_position">ЗАКРЕПИТЬ</string>
 </resources>

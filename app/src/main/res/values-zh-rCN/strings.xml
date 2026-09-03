@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">推荐使用荧光绿经典十字准星。利用方向微调键对齐头部高度，轻松实现上抬爆头。</string>
     <string name="guide_tip_apex_title">Apex手游 / 战区手游</string>
     <string name="guide_tip_apex_desc">近战高机动跟枪推荐使用V型或霰弹方框准星，快速索敌不挡视野。</string>
+    <string name="hud_on">准星已开启</string>
+    <string name="hud_off">准星已关闭</string>
+    <string name="btn_lock_position">锁定位置</string>
 </resources>

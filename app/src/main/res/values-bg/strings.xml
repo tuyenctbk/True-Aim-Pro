@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Equip \'Toxic CS Pro\' with Toxic Green. Use the D-pad nudger to align with head height for clean drag headshots.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Use \'Apex Wingman V\' or \'Shotgun CQB Box\' for high-mobility close-quarters tracking.</string>
+    <string name="hud_on">HUD ON</string>
+    <string name="hud_off">HUD OFF</string>
+    <string name="btn_lock_position">LOCK POSITION</string>
 </resources>

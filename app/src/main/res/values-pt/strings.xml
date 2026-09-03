@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Equipe a cruz verde clássica. Use o teclado direcional para alinhar na altura da cabeça para subidas de capa limpas.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Use a mira em V ou a caixa de espingarda para rastreamento ágil de curta distância.</string>
+    <string name="hud_on">HUD ATIVO</string>
+    <string name="hud_off">HUD INATIVO</string>
+    <string name="btn_lock_position">FIXAR POSIÇÃO</string>
 </resources>

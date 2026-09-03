@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Rüsten Sie das grüne Kreuzfadenkreuz aus. Richten Sie es mit den Einstelltasten auf Kopfhöhe für saubere Treffer aus.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Nutzen Sie das V- oder Schrotflinten-Fadenkreuz für Nahkampf-Tracking ohne Sichteinschränkung.</string>
+    <string name="hud_on">HUD AN</string>
+    <string name="hud_off">HUD AUS</string>
+    <string name="btn_lock_position">POSITION SPERREN</string>
 </resources>

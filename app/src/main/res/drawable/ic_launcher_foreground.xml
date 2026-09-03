@@ -5,63 +5,92 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- 1. Outer Tech Target Ring Brackets (Stays safe within the 66dp center zone, center is 54) -->
-    <path
-        android:strokeColor="#D0BCFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M 36,36 A 25 25 0 0 1 72,36" />
-    <path
-        android:strokeColor="#D0BCFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M 72,72 A 25 25 0 0 1 36,72" />
-
-    <!-- 2. Sharp Tech Corner Alignment Marks (Perfect square layout for aiming weights) -->
-    <path
-        android:strokeColor="#E8DEF8"
-        android:strokeWidth="2"
-        android:strokeLineCap="square"
-        android:fillColor="#00000000"
-        android:pathData="M 31,43 L 31,31 L 43,31 M 65,31 L 77,31 L 77,43 M 77,65 L 77,77 L 65,77 M 43,77 L 31,77 L 31,65" />
-
-    <!-- 3. Dynamic Esports Dot Ring (Inner Ring for quick focus) -->
+    <!-- 1. Outer Precision Target Ring Brackets (Stays safe within the 66dp center zone, center is 54) -->
     <path
         android:strokeColor="#00E5FF"
-        android:strokeWidth="1.8"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
         android:fillColor="#00000000"
-        android:pathData="M54,54m-12,0a12,12 0,1,1 24,0a12,12 0,1,1 -24,0" />
+        android:pathData="M 35,37 A 25 25 0 0 1 73,37" />
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M 73,71 A 25 25 0 0 1 35,71" />
 
-    <!-- 4. Ultra-Precision Aiming Bars (Thick vibrant Neon Green) -->
+    <!-- 2. Lateral HUD Target Arc Accents -->
+    <path
+        android:strokeColor="#D0BCFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M 37,45 A 21 21 0 0 0 37,63" />
+    <path
+        android:strokeColor="#D0BCFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M 71,45 A 21 21 0 0 1 71,63" />
+
+    <!-- 3. Sharp Tech Corner Alignment Marks (Esports Framing) -->
+    <path
+        android:strokeColor="#00FF66"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="square"
+        android:fillColor="#00000000"
+        android:pathData="M 29,40 L 29,29 L 40,29 M 68,29 L 79,29 L 79,40 M 79,68 L 79,79 L 68,79 M 40,79 L 29,79 L 29,68" />
+
+    <!-- 4. Inner Tactical Circle for Quick Target Acquisition -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1.6"
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-12.5,0a12.5,12.5 0,1,1 25,0a12.5,12.5 0,1,1 -25,0" />
+
+    <!-- 5. Ultra-Precision Main Crosshair Bars (Outer Dark Stroke for Maximum Contrast) -->
+    <path
+        android:strokeColor="#05140A"
+        android:strokeWidth="4.8"
+        android:strokeLineCap="round"
+        android:pathData="M 54,23 L 54,39 M 54,69 L 54,85 M 23,54 L 39,54 M 69,54 L 85,54" />
+
+    <!-- 6. Ultra-Precision Main Crosshair Bars (Vibrant Electric Neon Green Core) -->
     <path
         android:strokeColor="#00FF41"
         android:strokeWidth="3.2"
         android:strokeLineCap="round"
-        android:pathData="M 54,26 L 54,41 M 54,67 L 54,82 M 26,54 L 41,54 M 67,54 L 82,54" />
+        android:pathData="M 54,24 L 54,39 M 54,69 L 54,84 M 24,54 L 39,54 M 69,54 L 84,54" />
 
-    <!-- 5. Micro target alignment dots inside the reticle quadrants -->
+    <!-- 7. High-Intensity White Center Spine for Pop on Any Background -->
     <path
-        android:fillColor="#00E5FF"
-        android:pathData="M 43,43 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0" />
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M 65,43 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0" />
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M 65,65 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0" />
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M 43,65 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M 54,26 L 54,37 M 54,71 L 54,82 M 26,54 L 37,54 M 71,54 L 82,54" />
 
-    <!-- 6. High-Vis Centered Laser Core (Vibrant crimson overlay) -->
+    <!-- 8. Micro Target Alignment Dots in Quadrants -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M 43,43 m -1.6,0 a 1.6,1.6 0 1,1 3.2,0 a 1.6,1.6 0 1,1 -3.2,0" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M 65,43 m -1.6,0 a 1.6,1.6 0 1,1 3.2,0 a 1.6,1.6 0 1,1 -3.2,0" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M 65,65 m -1.6,0 a 1.6,1.6 0 1,1 3.2,0 a 1.6,1.6 0 1,1 -3.2,0" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M 43,65 m -1.6,0 a 1.6,1.6 0 1,1 3.2,0 a 1.6,1.6 0 1,1 -3.2,0" />
+
+    <!-- 9. High-Vis Centered Laser Core (Vibrant Crimson Outer Glow) -->
     <path
         android:fillColor="#FF1744"
-        android:pathData="M54,54m-4.5,0a4.5,4.5 0,1,1 9,0a4.5,4.5 0,1,1 -9,0" />
-    <!-- White center hotspot dot inside laser core for visual pop -->
+        android:pathData="M54,54m-4.8,0a4.8,4.8 0,1,1 9.6,0a4.8,4.8 0,1,1 -9.6,0" />
+
+    <!-- 10. Center Hotspot Core Dot (High-Power Laser Pip) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,54m-1.5,0a1.5,1.5 0,1,1 3,0a1.5,1.5 0,1,1 -3,0" />
+        android:pathData="M54,54m-1.8,0a1.8,1.8 0,1,1 3.6,0a1.8,1.8 0,1,1 -3.6,0" />
 
 </vector>

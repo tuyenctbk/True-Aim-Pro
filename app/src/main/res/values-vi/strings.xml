@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">Trang bị tâm chữ thập xanh lá. Dùng nút dịch chuyển căn ngang tầm đầu để dễ dàng kéo tâm headshot.</string>
     <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
     <string name="guide_tip_apex_desc">Dùng tâm chữ V hoặc khung shotgun để bám mục tiêu cự ly gần linh hoạt mà không che khuất tầm nhìn.</string>
+    <string name="hud_on">BẬT TÂM</string>
+    <string name="hud_off">TẮT TÂM</string>
+    <string name="btn_lock_position">KHÓA VỊ TRÍ</string>
 </resources>

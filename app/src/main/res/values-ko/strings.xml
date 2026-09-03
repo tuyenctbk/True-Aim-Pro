@@ -261,4 +261,7 @@
     <string name="guide_tip_freefire_desc">형광 그린 십자 조준선을 장착하고 방향키로 헤드라인 높이를 맞춰 손쉬운 드래그 헤드샷을 구사하세요.</string>
     <string name="guide_tip_apex_title">에이펙스 모바일 / 워존</string>
     <string name="guide_tip_apex_desc">빠른 기동의 근접 트래킹에는 V형 또는 샷건 박스 조준선이 시야를 가리지 않고 적합합니다.</string>
+    <string name="hud_on">HUD 켜짐</string>
+    <string name="hud_off">HUD 꺼짐</string>
+    <string name="btn_lock_position">위치 고정</string>
 </resources>
