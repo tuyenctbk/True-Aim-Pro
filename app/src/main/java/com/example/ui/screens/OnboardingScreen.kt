@@ -119,7 +119,7 @@ fun OnboardingScreen(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "TrueAim Pro",
+                        text = stringResource(R.string.app_name),
                         color = TextPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold

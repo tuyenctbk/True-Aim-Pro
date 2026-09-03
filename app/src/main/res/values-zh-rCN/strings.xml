@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">浏览其他分类或在工作室保存自定义准星</string>
     <string name="trainer_map_label">地图：</string>
     <string name="trainer_crit_label">暴击</string>
+    <string name="guide_tip_pubg_title">和平精英 / PUBG Mobile</string>
+    <string name="guide_tip_pubg_desc">推荐使用T型爆头准星。在训练场开启悬浮窗，精准对齐默认腰射中心点。</string>
+    <string name="guide_tip_codm_title">使命召唤手游 (CODM)</string>
+    <string name="guide_tip_codm_desc">瞬狙推荐搭配单点准星。开镜前先预瞄定位，开镜瞬间即锁定目标。</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">推荐使用荧光绿经典十字准星。利用方向微调键对齐头部高度，轻松实现上抬爆头。</string>
+    <string name="guide_tip_apex_title">Apex手游 / 战区手游</string>
+    <string name="guide_tip_apex_desc">近战高机动跟枪推荐使用V型或霰弹方框准星，快速索敌不挡视野。</string>
 </resources>

@@ -980,29 +980,29 @@ fun GameGuidesCard() {
             Spacer(modifier = Modifier.height(12.dp))
 
             GameTipItem(
-                game = "PUBG Mobile / BGMI",
-                tip = "Use the PUBG Headshot T-Shape reticle. Turn on the Floating HUD in training grounds to align precisely with your default hipfire dot."
+                game = stringResource(R.string.guide_tip_pubg_title),
+                tip = stringResource(R.string.guide_tip_pubg_desc)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             GameTipItem(
-                game = "Call of Duty Mobile",
-                tip = "For sniper quickscopes, equip 'Valorant One-Tap Dot'. Center it before ADS so your crosshair is already on target the moment you scope."
+                game = stringResource(R.string.guide_tip_codm_title),
+                tip = stringResource(R.string.guide_tip_codm_desc)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             GameTipItem(
-                game = "Free Fire / MAX",
-                tip = "Equip 'Toxic CS Pro' with Toxic Green. Use the D-pad nudger to align with head height for clean drag headshots."
+                game = stringResource(R.string.guide_tip_freefire_title),
+                tip = stringResource(R.string.guide_tip_freefire_desc)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             GameTipItem(
-                game = "Apex Mobile / Warzone",
-                tip = "Use 'Apex Wingman V' or 'Shotgun CQB Box' for high-mobility close-quarters tracking."
+                game = stringResource(R.string.guide_tip_apex_title),
+                tip = stringResource(R.string.guide_tip_apex_desc)
             )
         }
     }

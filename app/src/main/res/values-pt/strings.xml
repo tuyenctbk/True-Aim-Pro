@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Explore outras categorias ou salve miras personalizadas no Estúdio</string>
     <string name="trainer_map_label">Mapa:</string>
     <string name="trainer_crit_label">CRÍT</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Use a retícula em T para tiros na cabeça. Ative o HUD flutuante no treinamento para alinhar com precisão com seu ponto padrão.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Para tiros rápidos de sniper, use o ponto único. Posicione no centro antes de mirar para acertar no momento do tiro.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Equipe a cruz verde clássica. Use o teclado direcional para alinhar na altura da cabeça para subidas de capa limpas.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Use a mira em V ou a caixa de espingarda para rastreamento ágil de curta distância.</string>
 </resources>

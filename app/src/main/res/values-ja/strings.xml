@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">他のカテゴリを探すか、スタジオでカスタム照準を保存してください</string>
     <string name="trainer_map_label">マップ：</string>
     <string name="trainer_crit_label">会心</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / 荒野行動</string>
+    <string name="guide_tip_pubg_desc">T字型レティクルがおすすめです。トレーニング場でHUDを起動し、腰だめ照準点と精密に位置を合わせます。</string>
+    <string name="guide_tip_codm_title">CoD Mobile</string>
+    <string name="guide_tip_codm_desc">スナイパーのクイックスコープにはドット型が最適。覗き込み前に中心を捉え、瞬時に命中させます。</string>
+    <string name="guide_tip_freefire_title">Free Fire</string>
+    <string name="guide_tip_freefire_desc">ネオングリーン十字レティクルを装備。微調整パッドでヘッドラインに合わせ、引き抜きヘッドショットを狙います。</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">高機動な近接戦トラッキングにはV字型やボックス型レティクルが視界を遮らず最適です。</string>
 </resources>

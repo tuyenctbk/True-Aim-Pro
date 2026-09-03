@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">다른 카테고리를 탐색하거나 스튜디오에서 맞춤 조준선을 저장하세요</string>
     <string name="trainer_map_label">맵:</string>
     <string name="trainer_crit_label">치명타</string>
+    <string name="guide_tip_pubg_title">배틀그라운드 모바일 / BGMI</string>
+    <string name="guide_tip_pubg_desc">T자형 헤드샷 조준선을 사용하세요. 훈련장에서 플로팅 HUD를 켜고 기본 지향사격 점에 정확히 맞춥니다.</string>
+    <string name="guide_tip_codm_title">콜 오브 듀티 모바일</string>
+    <string name="guide_tip_codm_desc">스나이퍼 패스트줌에는 원탭 점 조준선이 이상적입니다. 줌 전에 화면 중앙을 타겟에 일치시키세요.</string>
+    <string name="guide_tip_freefire_title">프리파이어 / MAX</string>
+    <string name="guide_tip_freefire_desc">형광 그린 십자 조준선을 장착하고 방향키로 헤드라인 높이를 맞춰 손쉬운 드래그 헤드샷을 구사하세요.</string>
+    <string name="guide_tip_apex_title">에이펙스 모바일 / 워존</string>
+    <string name="guide_tip_apex_desc">빠른 기동의 근접 트래킹에는 V형 또는 샷건 박스 조준선이 시야를 가리지 않고 적합합니다.</string>
 </resources>

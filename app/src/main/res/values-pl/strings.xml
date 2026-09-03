@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Odkryj inne kategorie lub zapisz własne celowniki w Studio</string>
     <string name="trainer_map_label">Mapa:</string>
     <string name="trainer_crit_label">KRYT</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Use the PUBG Headshot T-Shape reticle. Turn on the Floating HUD in training grounds to align precisely with your default hipfire dot.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">For sniper quickscopes, equip \'Valorant One-Tap Dot\'. Center it before ADS so your crosshair is already on target the moment you scope.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Equip \'Toxic CS Pro\' with Toxic Green. Use the D-pad nudger to align with head height for clean drag headshots.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Use \'Apex Wingman V\' or \'Shotgun CQB Box\' for high-mobility close-quarters tracking.</string>
 </resources>

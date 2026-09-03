@@ -241,7 +241,9 @@ fun CrosshairMainApp(viewModel: CrosshairViewModel) {
 
         // Dialogs
         if (showSaveDialog) {
+            val activeConfig by viewModel.activeConfig.collectAsState()
             SavePresetDialog(
+                initialName = activeConfig.name,
                 onDismiss = { viewModel.closeSaveDialog() },
                 onSave = { name, gameTag -> viewModel.saveCurrentAsPreset(name, gameTag) }
             )
@@ -306,18 +308,11 @@ fun GamerNavRail(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "AIM",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-                Text(
-                    text = "PRO",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black
+                Icon(
+                    imageVector = Icons.Default.CenterFocusStrong,
+                    contentDescription = stringResource(R.string.app_name),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
                 )
 
                 Spacer(modifier = Modifier.height(28.dp))
@@ -387,7 +382,7 @@ fun GamerNavRail(
             }
 
             Text(
-                text = "v1.0.0",
+                text = "v${BuildConfig.VERSION_NAME}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 fontSize = 10.sp
             )
@@ -421,14 +416,6 @@ fun TopGamerAppBar(
                         fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = (-0.5).sp
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "PRO",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
                     )
                 }
 

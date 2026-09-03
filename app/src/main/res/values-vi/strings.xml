@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Khám phá danh mục khác hoặc lưu tâm ngắm tùy chỉnh trong Studio</string>
     <string name="trainer_map_label">Bản đồ:</string>
     <string name="trainer_crit_label">CHÍ MẠNG</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Sử dụng tâm chữ T ngắm bắn đầu. Bật HUD nổi trong phòng tập để căn chỉnh chuẩn xác với tâm bắn mặc định.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Để bắn tỉa nhanh gọn, hãy chọn tâm điểm tròn. Căn trước khi mở ống ngắm để trúng mục tiêu ngay lập tức.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Trang bị tâm chữ thập xanh lá. Dùng nút dịch chuyển căn ngang tầm đầu để dễ dàng kéo tâm headshot.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Dùng tâm chữ V hoặc khung shotgun để bám mục tiêu cự ly gần linh hoạt mà không che khuất tầm nhìn.</string>
 </resources>

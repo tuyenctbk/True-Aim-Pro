@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Explora otras categorías o guarda miras en el Estudio</string>
     <string name="trainer_map_label">Mapa:</string>
     <string name="trainer_crit_label">CRÍT</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Usa la retícula en T para disparos a la cabeza. Activa el HUD flotante en el campo de entrenamiento para alinearla con precisión.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Para tiros rápidos de francotirador, equipa la mira de punto. Centra antes de apuntar para dar en el blanco al instante.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Equipa la cruz verde clásica. Usa los botones de ajuste para alinearte a la altura de la cabeza para tiros perfectos.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Usa la mira en V o la caja de escopeta para un seguimiento a corta distancia sin bloquear la visión.</string>
 </resources>

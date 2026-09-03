@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Explorez d\'autres catégories ou enregistrez des réticules dans le Studio</string>
     <string name="trainer_map_label">Carte :</string>
     <string name="trainer_crit_label">CRIT</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Utilisez le réticule en T pour les tirs à la tête. Activez le HUD flottant au stand de tir pour un alignement parfait.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Pour le tir rapide au sniper, équipez le réticule point. Centrez avant de viser pour toucher instantanément.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Équipez la croix classique vert fluo. Utilisez le pavé de réglage pour aligner à hauteur de tête.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Utilisez le réticule en V ou le cadre de fusil à pompe pour un suivi réactif au corps à corps sans masquer la vue.</string>
 </resources>

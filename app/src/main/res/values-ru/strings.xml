@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Выберите другие категории или сохраните прицелы в Студии</string>
     <string name="trainer_map_label">Карта:</string>
     <string name="trainer_crit_label">КРИТ</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Используйте T-образный прицел для хедшотов. Включите плавающий HUD на полигоне для точного совмещения.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Для быстрых выстрелов со снайперки выберите точку. Центрируйте прицел до входа в зум.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Выберите классический зеленый крестик. Настройте высоту на уровень головы кнопками сдвига.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Используйте V-образный или рамочный прицел для ведения целей в ближнем динамичном бою.</string>
 </resources>

@@ -253,4 +253,12 @@
     <string name="gallery_empty_hint">Erkunden Sie andere Kategorien oder speichern Sie Fadenkreuze im Studio</string>
     <string name="trainer_map_label">Karte:</string>
     <string name="trainer_crit_label">KRIT</string>
+    <string name="guide_tip_pubg_title">PUBG Mobile / BGMI</string>
+    <string name="guide_tip_pubg_desc">Verwenden Sie das T-Form-Fadenkreuz für Headshots. Schalten Sie das schwebende HUD im Trainingsbereich für perfekte Ausrichtung ein.</string>
+    <string name="guide_tip_codm_title">Call of Duty Mobile</string>
+    <string name="guide_tip_codm_desc">Für Sniper-Quickscopes rüsten Sie den Punkt aus. Vor dem Anvisieren zentrieren für sofortige Treffer.</string>
+    <string name="guide_tip_freefire_title">Free Fire / MAX</string>
+    <string name="guide_tip_freefire_desc">Rüsten Sie das grüne Kreuzfadenkreuz aus. Richten Sie es mit den Einstelltasten auf Kopfhöhe für saubere Treffer aus.</string>
+    <string name="guide_tip_apex_title">Apex Mobile / Warzone</string>
+    <string name="guide_tip_apex_desc">Nutzen Sie das V- oder Schrotflinten-Fadenkreuz für Nahkampf-Tracking ohne Sichteinschränkung.</string>
 </resources>

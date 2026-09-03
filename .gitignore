@@ -17,3 +17,5 @@ local.properties
 .env
 debug.keystore
 common_release_key.jks
+.artifacts/
+*.artifact.md

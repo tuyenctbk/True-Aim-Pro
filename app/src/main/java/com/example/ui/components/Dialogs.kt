@@ -64,11 +64,12 @@ import com.example.ui.theme.ArenaDarkCanvas
 
 @Composable
 fun SavePresetDialog(
+    initialName: String = "",
     onDismiss: () -> Unit,
     onSave: (name: String, gameTag: String) -> Unit
 ) {
-    var presetName by remember { mutableStateOf("My Pro Reticle") }
-    var selectedGame by remember { mutableStateOf("Valorant") }
+    var presetName by remember { mutableStateOf(initialName) }
+    var selectedGame by remember { mutableStateOf("Custom") }
 
     val games = listOf("Valorant", "Apex Legends", "CS2", "CoD: Mobile", "PUBG Mobile", "Free Fire", "Overwatch", "Custom")
 
@@ -113,6 +114,7 @@ fun SavePresetDialog(
                     onValueChange = { presetName = it },
                     singleLine = true,
                     label = { Text(stringResource(R.string.profile_name_label)) },
+                    placeholder = { Text(stringResource(R.string.profile_name_label)) },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -153,7 +155,7 @@ fun SavePresetDialog(
                                 .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                                 .clickable {
                                     selectedGame = game
-                                    if (presetName == "My Pro Reticle" || games.any { presetName.startsWith(it) }) {
+                                    if (presetName.isBlank() || games.any { presetName.startsWith(it) }) {
                                         presetName = "$game Pro"
                                     }
                                 }
@@ -172,7 +174,10 @@ fun SavePresetDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(presetName, selectedGame) },
+                onClick = {
+                    val finalName = presetName.trim().ifEmpty { "$selectedGame Pro" }
+                    onSave(finalName, selectedGame)
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
