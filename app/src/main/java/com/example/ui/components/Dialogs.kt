@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,17 +23,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ToggleOn
@@ -46,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -63,29 +70,51 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.R
 import com.example.model.CrosshairConfig
 import com.example.ui.theme.ArenaDarkCanvas
+import com.example.ui.theme.LaserCrimson
 import com.example.ui.theme.MinimalAmber
 import com.example.ui.theme.MinimalGreen
 import com.example.ui.theme.MonoFontFamily
 
 @Composable
 fun SavePresetDialog(
-    initialName: String = "",
+    config: CrosshairConfig,
+    existingPresets: List<CrosshairConfig> = emptyList(),
     onDismiss: () -> Unit,
-    onSave: (name: String, gameTag: String) -> Unit
+    onSave: (name: String, gameTag: String, overwritePresetId: String?) -> Unit
 ) {
-    val customLabel = stringResource(R.string.category_custom)
-    var presetName by remember { mutableStateOf(initialName) }
-    var selectedGame by remember { mutableStateOf(CrosshairConfig.CATEGORY_CUSTOM) }
+    val initialName = remember(config) {
+        if (config.isCustom && config.name.isNotBlank()) config.name else ""
+    }
+    var presetName by remember(config.id) { mutableStateOf(initialName) }
+    var nameError by remember { mutableStateOf(false) }
+    var selectedGame by remember(config.id) {
+        mutableStateOf(
+            if (config.isCustom && config.category.isNotBlank()) config.category
+            else CrosshairConfig.CATEGORY_CUSTOM
+        )
+    }
+    var overwriteExisting by remember(config.id) { mutableStateOf(false) }
+
+    val matchingPreset = remember(presetName, config.id, existingPresets) {
+        val trimmed = presetName.trim()
+        val byName = if (trimmed.isNotEmpty()) {
+            existingPresets.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
+        } else null
+        byName ?: existingPresets.firstOrNull { it.id == config.id }
+    }
 
     val categories = listOf(
         CrosshairConfig.CATEGORY_CUSTOM to stringResource(R.string.category_custom),
@@ -96,50 +125,119 @@ fun SavePresetDialog(
         CrosshairConfig.CATEGORY_SNIPER to stringResource(R.string.category_sniper),
         CrosshairConfig.CATEGORY_SCIFI to stringResource(R.string.category_scifi)
     )
-    val categoryLabels = remember(categories) { categories.map { it.second } }
 
-    AlertDialog(
+    val isUpdating = overwriteExisting && matchingPreset != null
+
+    Dialog(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(24.dp),
-        icon = {
-            Box(
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            tonalElevation = 8.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 460.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .testTag("save_preset_dialog")
+        ) {
+            Column(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Bookmark,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        },
-        title = {
-            Text(
-                text = stringResource(R.string.save_game_preset_title),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column {
-                Text(
-                    text = stringResource(R.string.save_game_preset_desc),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Bookmark,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.save_game_preset_title),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(R.string.save_game_preset_desc),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.5.sp,
+                            lineHeight = 15.sp
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(14.dp))
+
+                // Live Crosshair Preview & Saved Configuration Specs (Size, Color, Opacity, Rotation)
+                PresetPreviewSummaryCard(config = config)
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 OutlinedTextField(
                     value = presetName,
-                    onValueChange = { presetName = it },
+                    onValueChange = { input ->
+                        if (input.length <= 32) {
+                            presetName = input
+                            if (input.isNotBlank()) {
+                                nameError = false
+                            }
+                        }
+                    },
                     singleLine = true,
+                    isError = nameError,
                     label = { Text(stringResource(R.string.profile_name_label)) },
-                    placeholder = { Text(stringResource(R.string.profile_name_label)) },
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.preset_name_placeholder),
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    trailingIcon = if (presetName.isNotEmpty()) {
+                        {
+                            IconButton(
+                                onClick = { presetName = "" },
+                                modifier = Modifier.testTag("preset_name_clear_btn")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = stringResource(R.string.cd_clear),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    } else null,
+                    supportingText = if (nameError) {
+                        {
+                            Text(
+                                text = stringResource(R.string.preset_name_required_error),
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 11.sp,
+                                modifier = Modifier.testTag("preset_name_error")
+                            )
+                        }
+                    } else null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -154,7 +252,76 @@ fun SavePresetDialog(
                         .testTag("preset_name_input")
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                if (matchingPreset != null) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(
+                                    if (!overwriteExisting) MaterialTheme.colorScheme.primary
+                                    else Color.Transparent
+                                )
+                                .clickable { overwriteExisting = false }
+                                .padding(horizontal = 8.dp, vertical = 7.dp)
+                                .testTag("save_mode_new_btn"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.save_preset_mode_new),
+                                color = if (!overwriteExisting) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(
+                                    if (overwriteExisting) MaterialTheme.colorScheme.primary
+                                    else Color.Transparent
+                                )
+                                .clickable {
+                                    overwriteExisting = true
+                                    if (presetName.isBlank()) {
+                                        presetName = matchingPreset.name
+                                        nameError = false
+                                    }
+                                }
+                                .padding(horizontal = 8.dp, vertical = 7.dp)
+                                .testTag("save_mode_overwrite_btn"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.save_preset_mode_overwrite,
+                                    matchingPreset.name
+                                ),
+                                color = if (overwriteExisting) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(R.string.target_game_category),
@@ -168,24 +335,19 @@ fun SavePresetDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     categories.forEach { (catKey, displayLabel) ->
                         val isSelected = selectedGame == catKey
-                        val defaultProName = stringResource(R.string.preset_name_pro_format, displayLabel)
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer)
                                 .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
-                                .clickable {
-                                    selectedGame = catKey
-                                    if (presetName.isBlank() || categoryLabels.any { presetName.startsWith(it) }) {
-                                        presetName = defaultProName
-                                    }
-                                }
+                                .clickable { selectedGame = catKey }
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .testTag("save_preset_cat_$catKey")
                         ) {
                             Text(
                                 text = displayLabel,
@@ -196,24 +358,394 @@ fun SavePresetDialog(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp)
+                            .testTag("save_preset_cancel_btn")
+                    ) {
+                        Text(text = stringResource(R.string.btn_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+
+                    Button(
+                        onClick = {
+                            val trimmed = presetName.trim()
+                            if (trimmed.isEmpty()) {
+                                nameError = true
+                            } else {
+                                onSave(
+                                    trimmed,
+                                    selectedGame,
+                                    if (isUpdating) matchingPreset?.id else null
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1.35f)
+                            .height(46.dp)
+                            .testTag("save_preset_confirm_btn")
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (isUpdating) R.string.btn_update_preset else R.string.btn_save_preset
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PresetPreviewSummaryCard(config: CrosshairConfig) {
+    val hexText = formatHexRgb(config.primaryColorHex)
+    val opacityPct = (config.opacity.coerceIn(0.10f, 1.00f) * 100).toInt()
+    val rotInt = (((config.rotationDeg % 360f) + 360f) % 360f).toInt()
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("save_preset_preview_summary")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(66.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(ArenaDarkCanvas)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                CrosshairView(
+                    config = config,
+                    overrideSize = (config.sizeDp * 0.9f).coerceIn(22f, 50f).dp
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(config.style.nameRes),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    SpecValueBadge(
+                        label = stringResource(R.string.size),
+                        value = stringResource(R.string.unit_dp_int, config.sizeDp.toInt()),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("save_dialog_spec_size")
+                    )
+                    SpecValueBadge(
+                        label = stringResource(R.string.preset_spec_color),
+                        value = hexText,
+                        swatchColor = Color(config.primaryColorHex or 0xFF000000L),
+                        modifier = Modifier
+                            .weight(1.25f)
+                            .testTag("save_dialog_spec_color")
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    SpecValueBadge(
+                        label = stringResource(R.string.opacity),
+                        value = stringResource(R.string.percent_format, opacityPct),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("save_dialog_spec_opacity")
+                    )
+                    SpecValueBadge(
+                        label = stringResource(R.string.rotation),
+                        value = stringResource(R.string.unit_deg_int, rotInt),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("save_dialog_spec_rotation")
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpecValueBadge(
+    label: String,
+    value: String,
+    swatchColor: Color? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .semantics(mergeDescendants = true) {}
+            .clip(RoundedCornerShape(9.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.65f), RoundedCornerShape(9.dp))
+            .padding(horizontal = 7.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 8.5.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (swatchColor != null) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(swatchColor)
+                        .border(0.7.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                )
+            }
+            Text(
+                text = value,
+                fontFamily = MonoFontFamily,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun RenamePresetDialog(
+    preset: CrosshairConfig,
+    onDismiss: () -> Unit,
+    onRename: (String) -> Unit
+) {
+    var presetName by remember(preset.id) { mutableStateOf(preset.name) }
+    var nameError by remember { mutableStateOf(false) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            tonalElevation = 8.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 460.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .testTag("rename_preset_dialog")
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.rename_preset_title),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                PresetPreviewSummaryCard(config = preset)
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = presetName,
+                    onValueChange = { input ->
+                        if (input.length <= 32) {
+                            presetName = input
+                            if (input.isNotBlank()) nameError = false
+                        }
+                    },
+                    singleLine = true,
+                    isError = nameError,
+                    label = { Text(stringResource(R.string.profile_name_label)) },
+                    supportingText = if (nameError) {
+                        {
+                            Text(
+                                text = stringResource(R.string.preset_name_required_error),
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 11.sp
+                            )
+                        }
+                    } else null,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("rename_preset_input")
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp)
+                    ) {
+                        Text(text = stringResource(R.string.btn_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+
+                    Button(
+                        onClick = {
+                            val trimmed = presetName.trim()
+                            if (trimmed.isEmpty()) {
+                                nameError = true
+                            } else {
+                                onRename(trimmed)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1.3f)
+                            .height(46.dp)
+                            .testTag("rename_preset_confirm_btn")
+                    ) {
+                        Text(text = stringResource(R.string.btn_save), fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DeletePresetConfirmDialog(
+    preset: CrosshairConfig,
+    onDismiss: () -> Unit,
+    onConfirmDelete: () -> Unit
+) {
+    val displayName = preset.name.ifBlank { stringResource(R.string.default_custom_crosshair_name) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp),
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(LaserCrimson.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = LaserCrimson,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         },
+        title = {
+            Text(
+                text = stringResource(R.string.delete_preset_confirm_title),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.delete_preset_confirm_msg, displayName),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+        },
         confirmButton = {
-            val selectedDisplay = categories.firstOrNull { it.first == selectedGame }?.second ?: customLabel
-            val fallbackName = stringResource(R.string.preset_name_pro_format, selectedDisplay)
             Button(
-                onClick = {
-                    val finalName = presetName.trim().ifEmpty { fallbackName }
-                    onSave(finalName, selectedGame)
-                },
+                onClick = onConfirmDelete,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = LaserCrimson,
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.testTag("save_preset_confirm_btn")
+                modifier = Modifier.testTag("delete_preset_confirm_btn")
             ) {
-                Text(text = stringResource(R.string.btn_save_preset), fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.delete_preset), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -479,7 +1011,7 @@ fun PermissionExplanationDialog(
                                     .testTag("perm_tutorial_prev_btn")
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.NavigateBefore,
+                                    imageVector = Icons.AutoMirrored.Filled.NavigateBefore,
                                     contentDescription = stringResource(R.string.cd_previous_step),
                                     modifier = Modifier.size(15.dp)
                                 )
@@ -505,7 +1037,7 @@ fun PermissionExplanationDialog(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Icon(
-                                    imageVector = Icons.Default.NavigateNext,
+                                    imageVector = Icons.AutoMirrored.Filled.NavigateNext,
                                     contentDescription = stringResource(R.string.cd_next_step),
                                     modifier = Modifier.size(15.dp)
                                 )

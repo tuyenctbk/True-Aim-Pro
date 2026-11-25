@@ -1,21 +1,18 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ProGuard / R8 rules for TrueAim Pro
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve Firestore document models and @Keep annotated classes
+-keep @androidx.annotation.Keep class * { *; }
+-keep class com.example.data.ai.UsageQuotaDoc { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve Room entities and DAOs
+-keep class com.example.data.room.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Preserve CrosshairStyle enum values used in Room & JSON serialization
+-keepclassmembers enum com.example.model.CrosshairStyle {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Preserve line numbers for clean crash stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

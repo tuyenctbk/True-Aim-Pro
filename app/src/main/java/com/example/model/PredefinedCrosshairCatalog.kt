@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.example.R
 
-enum class DesignCategory(@StringRes val labelRes: Int) {
+enum class DesignCategory(@param:StringRes val labelRes: Int) {
     ALL(R.string.filter_shape_all),
     CLASSIC_FPS(R.string.designs_cat_classic),
     PRECISION_DOTS(R.string.designs_cat_dots),
@@ -13,7 +13,7 @@ enum class DesignCategory(@StringRes val labelRes: Int) {
     SCIFI_HUD(R.string.designs_cat_scifi)
 }
 
-enum class CrosshairCollectionCategory(@StringRes val labelRes: Int) {
+enum class CrosshairCollectionCategory(@param:StringRes val labelRes: Int) {
     ALL(R.string.designs_cat_all),
     FAVORITES(R.string.collection_cat_favorites),
     COMPETITIVE(R.string.collection_cat_competitive),
@@ -24,7 +24,7 @@ enum class CrosshairCollectionCategory(@StringRes val labelRes: Int) {
 
     companion object {
         val PREDEFINED_TABS = listOf(ALL, FAVORITES, COMPETITIVE, MINIMALIST, TACTICAL, FUN)
-        val GALLERY_TABS = listOf(ALL, FAVORITES, COMPETITIVE, MINIMALIST, TACTICAL, FUN, CUSTOM)
+        val GALLERY_TABS = listOf(ALL, CUSTOM, FAVORITES, COMPETITIVE, MINIMALIST, TACTICAL, FUN)
     }
 }
 
@@ -32,9 +32,9 @@ data class PredefinedCrosshairDesign(
     val config: CrosshairConfig,
     val category: DesignCategory,
     val collectionCategory: CrosshairCollectionCategory,
-    @StringRes val titleRes: Int,
-    @StringRes val summaryRes: Int,
-    @StringRes val roleTagRes: Int
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val summaryRes: Int,
+    @param:StringRes val roleTagRes: Int
 )
 
 object PredefinedCrosshairCatalog {

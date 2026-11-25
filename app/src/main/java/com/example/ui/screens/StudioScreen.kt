@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BookmarkAdd
@@ -52,7 +53,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.material3.Button
@@ -100,6 +100,7 @@ import com.example.ui.PreviewBackground
 import com.example.ui.components.BatteryOptimizationDialog
 import com.example.ui.components.CrosshairColorPickerDialog
 import com.example.ui.components.CrosshairView
+import com.example.ui.components.CustomPresetsQuickSwitchSection
 import com.example.ui.components.GameBackgroundCanvas
 import com.example.ui.components.GettingStartedTooltipSequence
 import com.example.ui.components.InteractiveTargetTutorialOverlay
@@ -129,6 +130,7 @@ fun StudioScreen(
     val background by viewModel.selectedBackground.collectAsState()
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted.collectAsState()
     val recentColors by viewModel.recentCustomColors.collectAsState()
+    val savedPresets by viewModel.savedPresets.collectAsState()
 
     val context = LocalContext.current
     var showBatteryGuide by remember { mutableStateOf(false) }
@@ -194,6 +196,19 @@ fun StudioScreen(
                 onShowTutorial = { showInteractiveTutorial = true },
                 onTestRange = onNavigateToTrainer,
                 onOpenColorPicker = { showColorPickerDialog = true }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CustomPresetsQuickSwitchSection(
+                presets = savedPresets,
+                activeConfig = config,
+                onSelectPreset = { preset -> viewModel.quickSwitchPreset(preset) },
+                onSaveCurrent = { viewModel.openSaveDialog() },
+                onUpdatePreset = { preset -> viewModel.updatePresetWithActiveConfig(preset) },
+                onRenamePreset = { preset -> viewModel.openRenameDialog(preset) },
+                onDeletePreset = { preset -> viewModel.openDeleteConfirmDialog(preset) },
+                onViewAll = onNavigateToGallery
             )
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -651,9 +666,30 @@ fun GamePreviewStage(
                     animationSpec = spring(stiffness = Spring.StiffnessMedium),
                     label = "preview_gap"
                 )
+                val animatedOpacity by animateFloatAsState(
+                    targetValue = config.opacity,
+                    animationSpec = tween(160),
+                    label = "preview_opacity"
+                )
+                val animatedRotation by animateFloatAsState(
+                    targetValue = config.rotationDeg,
+                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                    label = "preview_rotation"
+                )
+                val animatedColor by animateColorAsState(
+                    targetValue = Color(config.primaryColorHex or 0xFF000000L),
+                    animationSpec = tween(180),
+                    label = "preview_color"
+                )
 
                 CrosshairView(
-                    config = config.copy(sizeDp = animatedSizeDp, gapDp = animatedGapDp),
+                    config = config.copy(
+                        sizeDp = animatedSizeDp,
+                        gapDp = animatedGapDp,
+                        opacity = animatedOpacity,
+                        rotationDeg = animatedRotation,
+                        primaryColorHex = animatedColor.toArgb().toLong() and 0xFFFFFFFFL
+                    ),
                     modifier = Modifier.align(Alignment.Center)
                 )
 
@@ -1120,7 +1156,7 @@ private fun LiveOverlayRotationBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.RotateRight,
+                    imageVector = Icons.AutoMirrored.Filled.RotateRight,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
@@ -1906,7 +1942,11 @@ fun GeometrySlidersSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${stringResource(R.string.rotation_label)} (${stringResource(R.string.unit_deg_int, config.rotationDeg.toInt())})",
+                    text = stringResource(
+                        R.string.studio_rotation_with_value,
+                        stringResource(R.string.rotation_label),
+                        stringResource(R.string.unit_deg_int, config.rotationDeg.toInt())
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -1985,7 +2025,11 @@ fun CenterAlignmentSection(
                         letterSpacing = 0.8.sp
                     )
                     Text(
-                        text = "${stringResource(R.string.offset_label)} ${stringResource(R.string.studio_offset_coords, config.offsetX, config.offsetY)}",
+                        text = stringResource(
+                            R.string.studio_offset_with_coords,
+                            stringResource(R.string.offset_label),
+                            stringResource(R.string.studio_offset_coords, config.offsetX, config.offsetY)
+                        ),
                         fontFamily = MonoFontFamily,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,

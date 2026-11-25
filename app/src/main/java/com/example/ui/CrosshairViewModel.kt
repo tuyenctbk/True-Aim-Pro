@@ -35,9 +35,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 import kotlin.random.Random
 
-enum class PreviewBackground(@StringRes val nameRes: Int) {
+enum class PreviewBackground(@param:StringRes val nameRes: Int) {
     CQB_DEPOT(R.string.bg_cqb_depot),
     DESERT_OUTPOST(R.string.bg_desert_outpost),
     CYBER_NIGHT(R.string.bg_cyber_night),
@@ -50,7 +51,7 @@ enum class AimGameState {
     IDLE, PLAYING, FINISHED
 }
 
-enum class AimDifficulty(@StringRes val titleRes: Int, val targetRadiusRange: ClosedFloatingPointRange<Float>) {
+enum class AimDifficulty(@param:StringRes val titleRes: Int, val targetRadiusRange: ClosedFloatingPointRange<Float>) {
     CASUAL(R.string.difficulty_casual, 30f..40f),
     OPERATOR(R.string.difficulty_operator, 22f..30f),
     APEX_PREDATOR(R.string.difficulty_apex_predator, 16f..22f)
@@ -130,22 +131,23 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
     private val _lastHitFeedback = MutableStateFlow<HitFeedback?>(null)
     val lastHitFeedback: StateFlow<HitFeedback?> = _lastHitFeedback.asStateFlow()
 
+    private val _lastMissTimestampMs = MutableStateFlow(0L)
+    val lastMissTimestampMs: StateFlow<Long> = _lastMissTimestampMs.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    private val builtInPresets: List<CrosshairConfig> =
-        PredefinedCrosshairCatalog.localizedPresets(application)
 
     val allPresets: StateFlow<List<CrosshairConfig>> = combine(
         savedPresets,
         _searchQuery
     ) { custom, query ->
-        val all = custom + builtInPresets
+        val appCtx = getApplication<Application>()
+        val builtIns = PredefinedCrosshairCatalog.localizedPresets(appCtx)
+        val all = custom + builtIns
         if (query.isBlank()) {
             all
         } else {
             val q = query.trim().lowercase()
-            val appCtx = getApplication<Application>()
             all.filter { preset ->
                 val localizedName = PredefinedCrosshairCatalog.resolveDisplayName(appCtx, preset)
                 val localizedCategory = CrosshairConfig.localizedCategoryName(appCtx, preset.category)
@@ -156,13 +158,29 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
                     localizedStyle.lowercase().contains(q)
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), builtInPresets)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        PredefinedCrosshairCatalog.localizedPresets(application)
+    )
 
     private val _gameState = MutableStateFlow(AimGameStats())
     val gameState: StateFlow<AimGameStats> = _gameState.asStateFlow()
 
     private val _showSaveDialog = MutableStateFlow(false)
     val showSaveDialog: StateFlow<Boolean> = _showSaveDialog.asStateFlow()
+
+    private val _savePresetDraftConfig = MutableStateFlow<CrosshairConfig?>(null)
+    val savePresetDraftConfig: StateFlow<CrosshairConfig?> = _savePresetDraftConfig.asStateFlow()
+
+    private val _renamingPreset = MutableStateFlow<CrosshairConfig?>(null)
+    val renamingPreset: StateFlow<CrosshairConfig?> = _renamingPreset.asStateFlow()
+
+    private val _deletingPreset = MutableStateFlow<CrosshairConfig?>(null)
+    val deletingPreset: StateFlow<CrosshairConfig?> = _deletingPreset.asStateFlow()
+
+    private val _presetFeedbackMessage = MutableStateFlow<String?>(null)
+    val presetFeedbackMessage: StateFlow<String?> = _presetFeedbackMessage.asStateFlow()
 
     private val _showPermissionDialog = MutableStateFlow(false)
     val showPermissionDialog: StateFlow<Boolean> = _showPermissionDialog.asStateFlow()
@@ -231,11 +249,7 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
         if (cleaned.length == 6 || cleaned.length == 8) {
             return try {
                 val parsed = cleaned.toLong(16)
-                val colorWithAlpha = if (cleaned.length == 6) {
-                    0xFF000000L or parsed
-                } else {
-                    parsed
-                }
+                val colorWithAlpha = 0xFF000000L or (parsed and 0x00FFFFFFL)
                 setPrimaryColorHex(colorWithAlpha)
                 true
             } catch (_: NumberFormatException) {
@@ -402,23 +416,102 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
         triggerHapticFeedback(25)
     }
 
-    fun saveCurrentAsPreset(name: String, category: String = CrosshairConfig.CATEGORY_CUSTOM) {
+    fun saveConfigAsPreset(
+        name: String,
+        category: String = CrosshairConfig.CATEGORY_CUSTOM,
+        sourceConfig: CrosshairConfig = _savePresetDraftConfig.value ?: activeConfig.value,
+        overwritePresetId: String? = null
+    ): CrosshairConfig {
+        val appCtx = getApplication<Application>()
         val cleanName = name.trim().ifEmpty {
-            getApplication<Application>().getString(R.string.default_my_reticle_name)
+            appCtx.getString(R.string.default_my_reticle_name)
         }
-        val newPreset = activeConfig.value.copy(
-            id = "custom_${System.currentTimeMillis()}",
+        val cleanCategory = category.ifBlank { CrosshairConfig.CATEGORY_CUSTOM }
+        val isOverwrite = !overwritePresetId.isNullOrBlank()
+        val presetId = if (isOverwrite) {
+            overwritePresetId!!
+        } else {
+            "custom_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}"
+        }
+        val newPreset = sourceConfig.normalizedForPreset().copy(
+            id = presetId,
             name = cleanName,
             isCustom = true,
-            category = category
+            category = cleanCategory
         )
-        repository.saveCustomPreset(newPreset)
-        repository.updateActiveConfig(newPreset)
-        eventTracker.logPresetSaved(cleanName, category)
+        val savedPreset = repository.saveCustomPreset(newPreset)
+        repository.updateActiveConfig(savedPreset)
+        eventTracker.logPresetSaved(cleanName, savedPreset.category)
+        _savePresetDraftConfig.value = null
         _showSaveDialog.value = false
+        _presetFeedbackMessage.value = appCtx.getString(
+            if (isOverwrite) R.string.preset_updated_toast else R.string.preset_saved_toast,
+            cleanName
+        )
         triggerHapticFeedback(30)
 
         scheduleSmartPopupEvaluation(EngagementMoment.PRESET_SAVED, delayMs = 700L)
+        return savedPreset
+    }
+
+    fun saveCurrentAsPreset(name: String, category: String = CrosshairConfig.CATEGORY_CUSTOM) {
+        saveConfigAsPreset(
+            name = name,
+            category = category,
+            sourceConfig = _savePresetDraftConfig.value ?: activeConfig.value,
+            overwritePresetId = null
+        )
+    }
+
+    fun updatePresetWithActiveConfig(preset: CrosshairConfig): CrosshairConfig {
+        return saveConfigAsPreset(
+            name = preset.name,
+            category = preset.category,
+            sourceConfig = activeConfig.value,
+            overwritePresetId = preset.id
+        )
+    }
+
+    fun quickSwitchPreset(preset: CrosshairConfig) {
+        applyPreset(preset)
+        val appCtx = getApplication<Application>()
+        val displayName = PredefinedCrosshairCatalog.resolveDisplayName(appCtx, preset)
+        _presetFeedbackMessage.value = appCtx.getString(R.string.preset_switched_toast, displayName)
+    }
+
+    fun switchToNextCustomPreset(): CrosshairConfig? {
+        val switched = repository.switchToNextCustomPreset() ?: return null
+        val appCtx = getApplication<Application>()
+        val displayName = PredefinedCrosshairCatalog.resolveDisplayName(appCtx, switched)
+        eventTracker.logEvent(
+            AppEventType.PRESET_EQUIPPED,
+            _currentScreen.value,
+            mapOf("preset_name" to switched.name, "style" to switched.style.name, "source" to "quick_cycle")
+        )
+        _presetFeedbackMessage.value = appCtx.getString(R.string.preset_switched_toast, displayName)
+        triggerHapticFeedback(20)
+        return switched
+    }
+
+    fun renameCustomPreset(preset: CrosshairConfig, newName: String): Boolean {
+        val trimmed = newName.trim()
+        if (trimmed.isEmpty()) return false
+        val updated = repository.renameCustomPreset(preset.id, trimmed)
+        if (updated) {
+            _renamingPreset.value = null
+            _presetFeedbackMessage.value = getApplication<Application>()
+                .getString(R.string.preset_renamed_toast, trimmed)
+            triggerHapticFeedback(20)
+        }
+        return updated
+    }
+
+    fun confirmDeletePreset(preset: CrosshairConfig) {
+        deletePreset(preset.id)
+        _deletingPreset.value = null
+        val displayName = PredefinedCrosshairCatalog.resolveDisplayName(getApplication(), preset)
+        _presetFeedbackMessage.value = getApplication<Application>()
+            .getString(R.string.preset_deleted_toast, displayName)
     }
 
     fun applyAndSaveAiConfig(config: CrosshairConfig) {
@@ -437,12 +530,34 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
         triggerHapticFeedback(20)
     }
 
-    fun openSaveDialog() {
+    fun openSaveDialog(config: CrosshairConfig? = null) {
+        _savePresetDraftConfig.value = (config ?: activeConfig.value).normalizedForPreset()
         _showSaveDialog.value = true
     }
 
     fun closeSaveDialog() {
+        _savePresetDraftConfig.value = null
         _showSaveDialog.value = false
+    }
+
+    fun openRenameDialog(preset: CrosshairConfig) {
+        _renamingPreset.value = preset
+    }
+
+    fun closeRenameDialog() {
+        _renamingPreset.value = null
+    }
+
+    fun openDeleteConfirmDialog(preset: CrosshairConfig) {
+        _deletingPreset.value = preset
+    }
+
+    fun closeDeleteConfirmDialog() {
+        _deletingPreset.value = null
+    }
+
+    fun clearPresetFeedbackMessage() {
+        _presetFeedbackMessage.value = null
     }
 
     fun openShareDialog(config: CrosshairConfig) {
@@ -467,7 +582,7 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun encodeCrosshairCode(c: CrosshairConfig): String {
-        val colorHexStr = String.format("%08X", c.primaryColorHex)
+        val colorHexStr = String.format(java.util.Locale.US, "%08X", c.primaryColorHex)
         return "TA;${c.style.name};${c.sizeDp.toInt()};${c.thicknessDp};${c.gapDp.toInt()};" +
             "${if (c.centerDot) 1 else 0};${c.centerDotSizeDp};${c.rotationDeg.toInt()};" +
             "${c.opacity};$colorHexStr;${if (c.outlineEnabled) 1 else 0};${if (c.tStyle) 1 else 0};${c.name}"
@@ -491,8 +606,10 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
             val colorHex = parts[9].toLong(16)
             val outlineEnabled = parts[10] == "1"
             val tStyle = parts[11] == "1"
-            val name = if (parts.size > 12 && parts[12].isNotBlank()) {
-                parts[12]
+            val name = if (parts.size > 12) {
+                parts.drop(12).joinToString(";").trim().ifBlank {
+                    getApplication<Application>().getString(R.string.default_imported_reticle_name)
+                }
             } else {
                 getApplication<Application>().getString(R.string.default_imported_reticle_name)
             }
@@ -513,7 +630,7 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
                 tStyle = tStyle,
                 isCustom = true,
                 category = CrosshairConfig.CATEGORY_CUSTOM
-            )
+            ).normalizedForPreset()
 
             repository.saveCustomPreset(importedConfig)
             repository.updateActiveConfig(importedConfig)
@@ -581,6 +698,9 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun hasAnyOtherDialogOpen(): Boolean {
         return _showSaveDialog.value ||
+            _savePresetDraftConfig.value != null ||
+            _renamingPreset.value != null ||
+            _deletingPreset.value != null ||
             _showPermissionDialog.value ||
             _showShareDialog.value != null ||
             _showImportDialog.value ||
@@ -708,7 +828,7 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
             state = AimGameState.PLAYING,
             score = 0,
             targetsHit = 0,
-            totalTargets = 1,
+            totalTargets = 0,
             timeLeftSec = 20,
             avgReactionTimeMs = 0,
             headshots = 0,
@@ -783,6 +903,7 @@ class CrosshairViewModel(application: Application) : AndroidViewModel(applicatio
         val current = _gameState.value
         if (current.state != AimGameState.PLAYING) return
 
+        _lastMissTimestampMs.value = System.currentTimeMillis()
         triggerHapticFeedback(40)
         _gameState.value = current.copy(
             score = (current.score - 25).coerceAtLeast(0),

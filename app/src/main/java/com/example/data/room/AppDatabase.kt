@@ -42,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "crosshair_pro_database"
                 )
                     .addMigrations(MIGRATION_1_2)
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance
                 instance

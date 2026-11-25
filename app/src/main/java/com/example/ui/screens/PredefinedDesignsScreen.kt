@@ -39,6 +39,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.GridView
@@ -46,7 +48,6 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.filled.ZoomOutMap
@@ -248,6 +249,15 @@ fun PredefinedDesignsScreen(
         viewModel.setBackground(next)
     }
 
+    val saveSelectedAsPreset = {
+        viewModel.openSaveDialog(
+            effectiveSelectedDesign.config.copy(
+                name = selectedTitle,
+                isCustom = false
+            )
+        )
+    }
+
     val resetSelectedDesignToDefaults = {
         val id = selectedDesign.config.id
         customColorsByDesignId = customColorsByDesignId - id
@@ -380,6 +390,7 @@ fun PredefinedDesignsScreen(
                                     viewModel.setReticleRotationDeg(clamped)
                                 }
                             },
+                            onSaveAsPreset = saveSelectedAsPreset,
                             onResetDefaults = resetSelectedDesignToDefaults
                         )
 
@@ -429,6 +440,7 @@ fun PredefinedDesignsScreen(
                                     viewModel.setReticleRotationDeg(clamped)
                                 }
                             },
+                            onSaveAsPreset = saveSelectedAsPreset,
                             onResetDefaults = resetSelectedDesignToDefaults
                         )
                     }
@@ -629,6 +641,7 @@ private fun SelectedDesignPreviewStage(
     onSizeChange: (Float) -> Unit,
     onOpacityChange: (Float) -> Unit,
     onRotationChange: (Float) -> Unit,
+    onSaveAsPreset: () -> Unit,
     onResetDefaults: () -> Unit
 ) {
     val cfg = design.config
@@ -717,6 +730,25 @@ private fun SelectedDesignPreviewStage(
                                 )
                             }
                         }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.68f))
+                            .border(1.dp, Color.White.copy(alpha = 0.25f), CircleShape)
+                            .clickable { onSaveAsPreset() }
+                            .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
+                            .testTag("designs_save_preset_btn"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.BookmarkAdd,
+                            contentDescription = stringResource(R.string.cd_save_preset),
+                            tint = Color.White,
+                            modifier = Modifier.size(17.dp)
+                        )
                     }
 
                     Box(
@@ -961,7 +993,7 @@ private fun SelectedDesignPreviewStage(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.RotateRight,
+                    imageVector = Icons.AutoMirrored.Filled.RotateRight,
                     contentDescription = stringResource(R.string.overlay_rotation_label),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)

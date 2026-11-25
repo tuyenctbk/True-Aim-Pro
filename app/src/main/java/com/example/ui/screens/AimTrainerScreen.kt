@@ -1,14 +1,11 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -54,7 +51,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -94,6 +90,15 @@ fun AimTrainerScreen(
     val background by viewModel.selectedBackground.collectAsState()
     val difficulty by viewModel.selectedDifficulty.collectAsState()
     val lastHit by viewModel.lastHitFeedback.collectAsState()
+    val lastMissTs by viewModel.lastMissTimestampMs.collectAsState()
+
+    val missFlashAlpha = remember { Animatable(0f) }
+    LaunchedEffect(lastMissTs) {
+        if (lastMissTs > 0L && stats.state == AimGameState.PLAYING) {
+            missFlashAlpha.snapTo(0.85f)
+            missFlashAlpha.animateTo(0f, tween(340, easing = FastOutSlowInEasing))
+        }
+    }
 
     Column(
         modifier = modifier
@@ -159,6 +164,15 @@ fun AimTrainerScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Interactive Target Shooting Arena
+        val arenaBorderColor by animateColorAsState(
+            targetValue = when {
+                missFlashAlpha.value > 0.1f -> LaserCrimson
+                stats.state == AimGameState.PLAYING -> MaterialTheme.colorScheme.primary
+                else -> MaterialTheme.colorScheme.outline
+            },
+            animationSpec = tween(140),
+            label = "arena_border_color"
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -166,10 +180,9 @@ fun AimTrainerScreen(
                 .clip(RoundedCornerShape(24.dp))
                 .background(ArenaDarkCanvas)
                 .border(
-                    2.dp,
-                    if (stats.state == AimGameState.PLAYING) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline,
-                    RoundedCornerShape(24.dp)
+                    width = if (missFlashAlpha.value > 0.1f) 3.dp else 2.dp,
+                    color = arenaBorderColor,
+                    shape = RoundedCornerShape(24.dp)
                 )
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -178,6 +191,15 @@ fun AimTrainerScreen(
 
                 GameBackgroundCanvas(background = background)
 
+                // Subtle crimson miss feedback flash overlay
+                if (missFlashAlpha.value > 0.01f) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(LaserCrimson.copy(alpha = 0.16f * missFlashAlpha.value))
+                    )
+                }
+
                 // User's Active Crosshair centered
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -185,7 +207,7 @@ fun AimTrainerScreen(
                 ) {
                     CrosshairView(
                         config = config,
-                        overrideSize = (config.sizeDp * 1.5f).dp
+                        overrideSize = config.sizeDp.coerceIn(22f, 56f).dp
                     )
                 }
 
@@ -286,8 +308,10 @@ fun AimTrainerScreen(
                             )
                         }
 
-                        val floatY = (arenaHeight * hit.yFraction) - (36 * hitAnimProgress.value).dp
-                        val floatX = arenaWidth * hit.xFraction - 30.dp
+                        val floatY = ((arenaHeight * hit.yFraction) - (36 * hitAnimProgress.value).dp)
+                            .coerceAtLeast(6.dp)
+                        val floatX = (arenaWidth * hit.xFraction - 34.dp)
+                            .coerceIn(4.dp, (arenaWidth - 88.dp).coerceAtLeast(4.dp))
                         val scale = 0.85f + (0.3f * hitAnimProgress.value)
 
                         Box(
@@ -449,20 +473,21 @@ fun AimTrainerScreen(
 @Composable
 fun StatsHudBar(stats: AimGameStats) {
     val isLowTime = stats.timeLeftSec in 1..5 && stats.state == AimGameState.PLAYING
-    val timerPulseScale by if (isLowTime) {
-        val infiniteTransition = rememberInfiniteTransition(label = "timer_pulse")
-        infiniteTransition.animateFloat(
-            initialValue = 1f,
-            targetValue = 1.14f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(380, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "timerPulseScale"
-        )
-    } else {
-        remember { mutableFloatStateOf(1f) }
+    val timerPulseScale = remember { Animatable(1f) }
+    LaunchedEffect(isLowTime, stats.timeLeftSec) {
+        if (isLowTime) {
+            timerPulseScale.snapTo(1.16f)
+            timerPulseScale.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
+        } else {
+            timerPulseScale.snapTo(1f)
+        }
     }
+
+    val animatedScore by animateIntAsState(
+        targetValue = stats.score,
+        animationSpec = tween(220, easing = FastOutSlowInEasing),
+        label = "hud_score_anim"
+    )
 
     val streakScale by animateFloatAsState(
         targetValue = if (stats.currentStreak > 0) 1.08f else 1f,
@@ -488,8 +513,8 @@ fun StatsHudBar(stats: AimGameStats) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.graphicsLayer {
-                    scaleX = timerPulseScale
-                    scaleY = timerPulseScale
+                    scaleX = timerPulseScale.value
+                    scaleY = timerPulseScale.value
                 }
             ) {
                 Icon(
@@ -516,7 +541,7 @@ fun StatsHudBar(stats: AimGameStats) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${stats.score}",
+                    text = "$animatedScore",
                     fontFamily = MonoFontFamily,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
@@ -586,6 +611,28 @@ fun SummaryScoreCard(
         else -> stringResource(R.string.rank_gold_ranger)
     }
 
+    val cardScale = remember { Animatable(0.88f) }
+    val cardAlpha = remember { Animatable(0f) }
+    val animatedFinalScore = remember { Animatable(0f) }
+    LaunchedEffect(stats.score) {
+        cardAlpha.animateTo(1f, tween(220))
+    }
+    LaunchedEffect(Unit) {
+        cardScale.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
+    }
+    LaunchedEffect(stats.score) {
+        animatedFinalScore.animateTo(
+            targetValue = stats.score.toFloat(),
+            animationSpec = tween(550, easing = FastOutSlowInEasing)
+        )
+    }
+
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -593,6 +640,11 @@ fun SummaryScoreCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(20.dp)
+            .graphicsLayer {
+                scaleX = cardScale.value
+                scaleY = cardScale.value
+                alpha = cardAlpha.value
+            }
             .testTag("aim_summary_card")
     ) {
         Column(
@@ -609,7 +661,7 @@ fun SummaryScoreCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = stringResource(R.string.trainer_score_pts_format, stats.score),
+                text = stringResource(R.string.trainer_score_pts_format, animatedFinalScore.value.toInt()),
                 fontFamily = MonoFontFamily,
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,

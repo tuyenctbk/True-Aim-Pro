@@ -1,8 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:width="66dp"
-        android:height="66dp"
-        android:drawable="@drawable/img_trueaim_app_icon_1795534801161"
-        android:gravity="center" />
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Dark metallic tactical corner brackets (inside 66dp safe zone: 21..87) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M26,37 L26,28.5 Q26,26 28.5,26 L37,26"
+        android:strokeWidth="3.2"
+        android:strokeColor="#FF1F2D45"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M26,37 L26,28.5 Q26,26 28.5,26 L37,26"
+        android:strokeWidth="1.4"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M71,26 L79.5,26 Q82,26 82,28.5 L82,37"
+        android:strokeWidth="3.2"
+        android:strokeColor="#FF1F2D45"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M71,26 L79.5,26 Q82,26 82,28.5 L82,37"
+        android:strokeWidth="1.4"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M82,71 L82,79.5 Q82,82 79.5,82 L71,82"
+        android:strokeWidth="3.2"
+        android:strokeColor="#FF1F2D45"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M82,71 L82,79.5 Q82,82 79.5,82 L71,82"
+        android:strokeWidth="1.4"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M37,82 L28.5,82 Q26,82 26,79.5 L26,71"
+        android:strokeWidth="3.2"
+        android:strokeColor="#FF1F2D45"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M37,82 L28.5,82 Q26,82 26,79.5 L26,71"
+        android:strokeWidth="1.4"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Outer dark housing ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,28 A26,26 0 1,1 53.99,28 Z"
+        android:strokeWidth="5.4"
+        android:strokeColor="#AA060C18" />
+
+    <!-- Outer segmented emerald precision ring (4 quadrants) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M58.5,28.4 A26,26 0 0,1 79.6,49.5"
+        android:strokeWidth="4.0"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="butt" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M79.6,58.5 A26,26 0 0,1 58.5,79.6"
+        android:strokeWidth="4.0"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="butt" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M49.5,79.6 A26,26 0 0,1 28.4,58.5"
+        android:strokeWidth="4.0"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="butt" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M28.4,49.5 A26,26 0 0,1 49.5,28.4"
+        android:strokeWidth="4.0"
+        android:strokeColor="#FF00E676"
+        android:strokeLineCap="butt" />
+
+    <!-- Inner electric cyan calibrated targeting arcs -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M57.5,35.3 A19,19 0 0,1 72.7,50.5"
+        android:strokeWidth="2.4"
+        android:strokeColor="#FF00E5FF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M72.7,57.5 A19,19 0 0,1 57.5,72.7"
+        android:strokeWidth="2.4"
+        android:strokeColor="#FF00E5FF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M50.5,72.7 A19,19 0 0,1 35.3,57.5"
+        android:strokeWidth="2.4"
+        android:strokeColor="#FF00E5FF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M35.3,50.5 A19,19 0 0,1 50.5,35.3"
+        android:strokeWidth="2.4"
+        android:strokeColor="#FF00E5FF"
+        android:strokeLineCap="round" />
+
+    <!-- Four razor-sharp tapered emerald crosshair axes -->
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M52.8,24 L55.2,24 L54.4,46 L53.6,46 Z" />
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M53.6,62 L54.4,62 L55.2,84 L52.8,84 Z" />
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M24,52.8 L46,53.6 L46,54.4 L24,55.2 Z" />
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M62,53.6 L84,52.8 L84,55.2 L62,54.4 Z" />
+
+    <!-- Luminous emerald halo & pinpoint white center laser dot -->
+    <path
+        android:fillColor="#4800E676"
+        android:pathData="M54,46.5 A7.5,7.5 0 1,1 53.99,46.5 Z" />
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M54,49.8 A4.2,4.2 0 1,1 53.99,49.8 Z" />
+    <path
+        android:fillColor="#FFEFFFF7"
+        android:pathData="M54,51.6 A2.4,2.4 0 1,1 53.99,51.6 Z" />
+</vector>

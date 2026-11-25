@@ -534,7 +534,11 @@ fun openPlayStoreListing(context: Context) {
 
 fun shareAppWithSquad(context: Context) {
     val pkg = context.packageName
-    val shareBody = "${context.getString(R.string.share_app_text)}\nhttps://play.google.com/store/apps/details?id=$pkg"
+    val shareBody = context.getString(
+        R.string.share_app_body_format,
+        context.getString(R.string.share_app_text),
+        "https://play.google.com/store/apps/details?id=$pkg"
+    )
     val sendIntent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_TEXT, shareBody)
         type = "text/plain"

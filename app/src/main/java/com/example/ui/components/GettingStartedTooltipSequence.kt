@@ -30,14 +30,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Tune
@@ -354,7 +354,7 @@ fun GettingStartedTooltipSequence(
                                     modifier = Modifier.height(36.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.NavigateBefore,
+                                        imageVector = Icons.AutoMirrored.Filled.NavigateBefore,
                                         contentDescription = stringResource(R.string.cd_previous_step),
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -382,7 +382,7 @@ fun GettingStartedTooltipSequence(
                                     Text(stringResource(R.string.btn_next), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.width(2.dp))
                                     Icon(
-                                        imageVector = Icons.Default.NavigateNext,
+                                        imageVector = Icons.AutoMirrored.Filled.NavigateNext,
                                         contentDescription = stringResource(R.string.cd_next_step),
                                         modifier = Modifier.size(16.dp)
                                     )

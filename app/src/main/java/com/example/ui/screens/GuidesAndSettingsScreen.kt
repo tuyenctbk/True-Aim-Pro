@@ -974,8 +974,7 @@ private fun ActivityEventInsightsCard(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = event.eventName,
-                                        fontFamily = MonoFontFamily,
+                                        text = localizedEventName(event.eventName),
                                         color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
@@ -1411,10 +1410,54 @@ private fun localizedEventCategory(categoryKey: String): String {
 }
 
 @Composable
+private fun localizedEventName(eventName: String): String {
+    val resId = when (eventName.lowercase(Locale.ROOT)) {
+        "app_open" -> R.string.event_name_app_open
+        "splash_complete" -> R.string.event_name_splash_complete
+        "onboarding_complete" -> R.string.event_name_onboarding_complete
+        "screen_view" -> R.string.event_name_screen_view
+        "overlay_started" -> R.string.event_name_overlay_started
+        "overlay_stopped" -> R.string.event_name_overlay_stopped
+        "overlay_session_completed" -> R.string.event_name_overlay_session_completed
+        "overlay_calibration_toggled" -> R.string.event_name_overlay_calibration_toggled
+        "reticle_customized" -> R.string.event_name_reticle_customized
+        "preset_equipped" -> R.string.event_name_preset_equipped
+        "preset_saved" -> R.string.event_name_preset_saved
+        "preset_deleted" -> R.string.event_name_preset_deleted
+        "preset_imported" -> R.string.event_name_preset_imported
+        "preset_shared" -> R.string.event_name_preset_shared
+        "preset_favorited" -> R.string.event_name_preset_favorited
+        "aim_drill_started" -> R.string.event_name_aim_drill_started
+        "aim_drill_completed" -> R.string.event_name_aim_drill_completed
+        "permission_overlay_granted" -> R.string.event_name_permission_overlay_granted
+        "permission_notifications_granted" -> R.string.event_name_permission_notifications_granted
+        "theme_changed" -> R.string.event_name_theme_changed
+        "settings_reset" -> R.string.event_name_settings_reset
+        "update_checked" -> R.string.event_name_update_checked
+        "popup_impression" -> R.string.event_name_popup_impression
+        "popup_accepted" -> R.string.event_name_popup_accepted
+        "popup_dismissed" -> R.string.event_name_popup_dismissed
+        "popup_never_ask" -> R.string.event_name_popup_never_ask
+        "popup_suppressed" -> R.string.event_name_popup_suppressed
+        "ai_architect_run" -> R.string.event_name_ai_architect_run
+        "ai_vision_run" -> R.string.event_name_ai_vision_run
+        "ai_coach_run" -> R.string.event_name_ai_coach_run
+        "ai_tier_fallback" -> R.string.event_name_ai_tier_fallback
+        "ai_grace_claimed" -> R.string.event_name_ai_grace_claimed
+        "ai_eco_mode_toggled" -> R.string.event_name_ai_eco_mode_toggled
+        "ai_google_sign_in" -> R.string.event_name_ai_google_sign_in
+        else -> null
+    }
+    return if (resId != null) stringResource(resId) else eventName
+}
+
+@Composable
 private fun localizedEventScreen(screenKey: String): String {
-    val resId = when (screenKey.lowercase()) {
+    val resId = when (screenKey.lowercase(Locale.ROOT)) {
+        "app" -> R.string.app_name
         "studio" -> R.string.nav_studio
         "gallery", "presets" -> R.string.nav_presets
+        "favorites" -> R.string.collection_cat_favorites
         "designs", "predefined_designs" -> R.string.designs_screen_title
         "trainer" -> R.string.nav_trainer
         "ai_lab" -> R.string.nav_ai_lab

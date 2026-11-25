@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,10 +29,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Refresh
@@ -51,10 +58,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +83,7 @@ import com.example.ui.components.CrosshairView
 import com.example.ui.components.ExpandableShapeAndSearchPanel
 import com.example.ui.components.FavoriteHeartButton
 import com.example.ui.components.FilterSummaryStrip
+import com.example.ui.components.PresetCompactSpecPill
 import com.example.ui.theme.ArenaDarkCanvas
 import com.example.ui.theme.LaserCrimson
 import com.example.ui.theme.tvFocusable
@@ -122,9 +132,9 @@ fun ReticleGalleryScreen(
     val activeConfig by viewModel.activeConfig.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val favoriteIds by viewModel.favoriteIds.collectAsState()
-    var selectedCategory by remember { mutableStateOf(CrosshairCollectionCategory.ALL) }
-    var selectedShape by remember { mutableStateOf(DesignCategory.ALL) }
-    var showSecondaryFilters by remember { mutableStateOf(false) }
+    var selectedCategory by rememberSaveable { mutableStateOf(CrosshairCollectionCategory.ALL) }
+    var selectedShape by rememberSaveable { mutableStateOf(DesignCategory.ALL) }
+    var showSecondaryFilters by rememberSaveable { mutableStateOf(false) }
 
     val shapeFiltered = remember(presets, selectedShape) {
         presets.filter { matchesShapeFilter(it, selectedShape) }
@@ -219,7 +229,7 @@ fun ReticleGalleryScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 modifier = Modifier
                     .height(52.dp)
                     .testTag("gallery_import_btn")
@@ -229,8 +239,25 @@ fun ReticleGalleryScreen(
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(5.dp))
                 Text(text = stringResource(R.string.btn_import), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+
+            IconButton(
+                onClick = { viewModel.openSaveDialog() },
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .tvFocusable(RoundedCornerShape(16.dp), MaterialTheme.colorScheme.primary)
+                    .testTag("gallery_save_current_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.BookmarkAdd,
+                    contentDescription = stringResource(R.string.cd_save_preset),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
 
@@ -338,8 +365,12 @@ fun ReticleGalleryScreen(
                     val isFavoritesEmpty = selectedCategory == CrosshairCollectionCategory.FAVORITES &&
                         selectedShape == DesignCategory.ALL &&
                         searchQuery.isBlank()
+                    val isCustomEmpty = selectedCategory == CrosshairCollectionCategory.CUSTOM &&
+                        selectedShape == DesignCategory.ALL &&
+                        searchQuery.isBlank()
                     Text(
                         text = when {
+                            isCustomEmpty -> stringResource(R.string.no_presets_found)
                             isFavoritesEmpty -> stringResource(R.string.favorites_empty_title)
                             searchQuery.isNotEmpty() -> stringResource(R.string.gallery_empty_search, searchQuery)
                             else -> stringResource(R.string.gallery_empty_default)
@@ -352,14 +383,42 @@ fun ReticleGalleryScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = stringResource(
-                            if (isFavoritesEmpty) R.string.favorites_empty_hint
-                            else R.string.gallery_empty_hint
+                            when {
+                                isCustomEmpty -> R.string.custom_presets_empty_hint
+                                isFavoritesEmpty -> R.string.favorites_empty_hint
+                                else -> R.string.gallery_empty_hint
+                            }
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center
                     )
-                    if (hasAnyFilter) {
+                    if (isCustomEmpty) {
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Button(
+                            onClick = { viewModel.openSaveDialog() },
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            modifier = Modifier
+                                .heightIn(min = 48.dp)
+                                .testTag("gallery_empty_save_preset_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.BookmarkAdd,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.save_as_preset),
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else if (hasAnyFilter) {
                         Spacer(modifier = Modifier.height(14.dp))
                         OutlinedButton(
                             onClick = resetAllFilters,
@@ -394,23 +453,31 @@ fun ReticleGalleryScreen(
                     .testTag("gallery_grid_view")
             ) {
                 items(filteredList, key = { it.id }) { preset ->
-                    val isEquipped = activeConfig.id == preset.id ||
-                        (activeConfig.style == preset.style && activeConfig.name == preset.name)
+                    val isEquipped = if (preset.isCustom) {
+                        activeConfig.id == preset.id
+                    } else {
+                        activeConfig.id == preset.id ||
+                            (!activeConfig.isCustom && activeConfig.style == preset.style && activeConfig.name == preset.name)
+                    }
 
                     GalleryReticleCard(
                         preset = preset,
                         isEquipped = isEquipped,
                         isFavorite = preset.id in favoriteIds,
                         onToggleFavorite = { viewModel.toggleFavorite(preset.id) },
-                        onEquip = { viewModel.applyPreset(preset) },
+                        onEquip = { viewModel.quickSwitchPreset(preset) },
                         onCustomize = {
                             viewModel.applyPreset(preset)
                             onNavigateToStudio()
                         },
                         onShare = { viewModel.openShareDialog(preset) },
+                        onRename = if (preset.isCustom) {
+                            { viewModel.openRenameDialog(preset) }
+                        } else null,
                         onDelete = if (preset.isCustom) {
-                            { viewModel.deletePreset(preset.id) }
-                        } else null
+                            { viewModel.openDeleteConfirmDialog(preset) }
+                        } else null,
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -427,7 +494,9 @@ fun GalleryReticleCard(
     onEquip: () -> Unit,
     onCustomize: () -> Unit,
     onShare: () -> Unit,
-    onDelete: (() -> Unit)?
+    onRename: (() -> Unit)? = null,
+    onDelete: (() -> Unit)?,
+    modifier: Modifier = Modifier
 ) {
     val builtInTitleRes = PredefinedCrosshairCatalog.resolveTitleResById(preset.id)
     val displayTitle = when {
@@ -443,21 +512,39 @@ fun GalleryReticleCard(
         collectionLabel
     }
 
+    val cardContainerColor by animateColorAsState(
+        targetValue = if (isEquipped) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f)
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
+        animationSpec = tween(220),
+        label = "gallery_card_bg_${preset.id}"
+    )
+    val cardBorderColor by animateColorAsState(
+        targetValue = if (isEquipped) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        animationSpec = tween(220),
+        label = "gallery_card_border_${preset.id}"
+    )
+    val cardScale by animateFloatAsState(
+        targetValue = if (isEquipped) 1.015f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "gallery_card_scale_${preset.id}"
+    )
+
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isEquipped) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f)
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        border = BorderStroke(
-            if (isEquipped) 1.5.dp else 1.dp,
-            if (isEquipped) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-        ),
-        modifier = Modifier
+        colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+        border = BorderStroke(if (isEquipped) 1.5.dp else 1.dp, cardBorderColor),
+        modifier = modifier
             .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = cardScale
+                scaleY = cardScale
+            }
             .testTag("gallery_card_${preset.id}")
     ) {
         Column(
@@ -498,26 +585,44 @@ fun GalleryReticleCard(
 
                     IconButton(
                         onClick = onShare,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = stringResource(R.string.cd_share_preset),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(15.dp)
+                            modifier = Modifier.size(14.dp)
                         )
+                    }
+
+                    if (onRename != null) {
+                        IconButton(
+                            onClick = onRename,
+                            modifier = Modifier
+                                .size(28.dp)
+                                .testTag("gallery_rename_btn_${preset.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.cd_rename_preset),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
 
                     if (onDelete != null) {
                         IconButton(
                             onClick = onDelete,
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier
+                                .size(28.dp)
+                                .testTag("gallery_delete_btn_${preset.id}")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(R.string.cd_delete_preset),
                                 tint = LaserCrimson,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
@@ -537,7 +642,7 @@ fun GalleryReticleCard(
             ) {
                 CrosshairView(
                     config = preset,
-                    overrideSize = (preset.sizeDp * 1.4f).dp
+                    overrideSize = (preset.sizeDp * 1.2f).coerceIn(28f, 64f).dp
                 )
             }
 
@@ -552,6 +657,11 @@ fun GalleryReticleCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
+            if (preset.isCustom) {
+                Spacer(modifier = Modifier.height(5.dp))
+                PresetCompactSpecPill(config = preset)
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 

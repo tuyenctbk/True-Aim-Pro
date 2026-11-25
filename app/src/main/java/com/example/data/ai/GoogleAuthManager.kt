@@ -32,13 +32,15 @@ object GoogleAuthManager {
 
     private const val TAG = "Auth"
 
+    private fun resolveDefaultWebClientId(context: Context): String? {
+        val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+        if (resId == 0) return null
+        return runCatching { context.getString(resId) }.getOrNull()?.takeIf { it.isNotBlank() }
+    }
+
     suspend fun attemptAutoSignIn(context: Context): Boolean {
         if (Firebase.auth.currentUser != null) return true
-        val clientId = try {
-            context.getString(R.string.default_web_client_id)
-        } catch (_: Exception) {
-            return false
-        }
+        val clientId = resolveDefaultWebClientId(context) ?: return false
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
             .setServerClientId(clientId)
@@ -72,11 +74,8 @@ object GoogleAuthManager {
     }
 
     suspend fun signInInteractive(context: Context): SignInOutcome {
-        val clientId = try {
-            context.getString(R.string.default_web_client_id)
-        } catch (_: Exception) {
-            return SignInOutcome.Failure(context.getString(R.string.ai_auth_config_missing))
-        }
+        val clientId = resolveDefaultWebClientId(context)
+            ?: return SignInOutcome.Failure(context.getString(R.string.ai_auth_config_missing))
         val activity = context.findActivity()
             ?: return SignInOutcome.Failure(context.getString(R.string.ai_auth_failed_generic))
 

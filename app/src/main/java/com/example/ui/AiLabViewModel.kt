@@ -21,6 +21,7 @@ import com.example.data.analytics.AnalyticsSummary
 import com.example.data.analytics.AppEventTracker
 import com.example.data.analytics.AppEventType
 import com.example.model.CrosshairConfig
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -62,6 +63,9 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
     val statusBannerMessage: StateFlow<String?> = _statusBannerMessage.asStateFlow()
 
     private var lastCoachInputs: CoachInputs? = null
+    private var architectJob: Job? = null
+    private var visionJob: Job? = null
+    private var coachJob: Job? = null
 
     private data class CoachInputs(
         val lastDrill: AimGameStats,
@@ -183,7 +187,8 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
         val plannedTier = resolvePlannedTier(forceEcoLite)
         _architectState.value = AiTaskState.Loading(plannedTier)
 
-        viewModelScope.launch {
+        architectJob?.cancel()
+        architectJob = viewModelScope.launch {
             val result = aiRepository.generateCrosshair(clean, forceEcoLite)
             _architectState.value = result
             if (result is AiTaskState.Success) {
@@ -200,6 +205,7 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun runArchitectLocally(prompt: String = _architectPrompt.value) {
+        architectJob?.cancel()
         val effectivePrompt = prompt.trim().ifBlank {
             getApplication<Application>().getString(R.string.ai_default_local_prompt)
         }
@@ -224,7 +230,8 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
         val plannedTier = resolvePlannedTier(forceEcoLite)
         _visionState.value = AiTaskState.Loading(plannedTier)
 
-        viewModelScope.launch {
+        visionJob?.cancel()
+        visionJob = viewModelScope.launch {
             val result = aiRepository.analyzeMapScreenshot(bitmap, forceEcoLite)
             _visionState.value = result
             if (result is AiTaskState.Success) {
@@ -243,7 +250,8 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
     fun runVisionAnalysisLocally() {
         val bitmap = _pickedScreenshot.value ?: return
         _visionState.value = AiTaskState.Loading(AiExecutionTier.LOCAL_ENGINE)
-        viewModelScope.launch {
+        visionJob?.cancel()
+        visionJob = viewModelScope.launch {
             val local = aiRepository.analyzeMapScreenshotLocally(bitmap)
             _visionState.value = AiTaskState.Success(local)
             eventTracker.logEvent(
@@ -268,7 +276,8 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
         val plannedTier = resolvePlannedTier(forceEcoLite)
         _coachState.value = AiTaskState.Loading(plannedTier)
 
-        viewModelScope.launch {
+        coachJob?.cancel()
+        coachJob = viewModelScope.launch {
             val result = aiRepository.generateAimCoaching(
                 lastDrill = lastDrill,
                 difficulty = difficulty,
@@ -310,6 +319,7 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
         summary: AnalyticsSummary,
         activeConfig: CrosshairConfig
     ) {
+        coachJob?.cancel()
         lastCoachInputs = CoachInputs(lastDrill, difficulty, usageStats, summary, activeConfig)
         val local = aiRepository.generateAimCoachingLocally(
             lastDrill = lastDrill,
@@ -324,6 +334,13 @@ class AiLabViewModel(application: Application) : AndroidViewModel(application) {
             "ai_lab",
             mapOf("tier" to AiExecutionTier.LOCAL_ENGINE.name, "cached" to false)
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        architectJob?.cancel()
+        visionJob?.cancel()
+        coachJob?.cancel()
     }
 
     private fun resolvePlannedTier(forceEcoLite: Boolean): AiExecutionTier {

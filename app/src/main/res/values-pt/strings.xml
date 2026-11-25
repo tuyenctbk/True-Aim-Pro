@@ -187,7 +187,7 @@
     <string name="drill_complete_title">TREINO CONCLUÍDO</string>
     <string name="stat_accuracy">Precisão</string>
     <string name="stat_reaction">Reação</string>
-    <string name="stat_headshots">Headshots</string>
+    <string name="stat_headshots">Tiros na cabeça</string>
     <string name="stat_best_streak">Melhor sequência</string>
     <string name="play_again_btn">JOGAR NOVAMENTE</string>
     <string name="reset_factory_default_title">RESTAURAR PADRÃO DE FÁBRICA</string>
@@ -283,7 +283,7 @@
     <string name="cd_tap_target">Indicador de alvo</string>
     <string name="cd_copy_code">Copiar código</string>
     <string name="cd_star_rating">Estrela %1$d</string>
-    <string name="rank_sss_pro_esports">SSS • PRO ESPORTS</string>
+    <string name="rank_sss_pro_esports">SSS • ESPORTS PRO</string>
     <string name="rank_diamond_aim">MIRA DIAMANTE</string>
     <string name="rank_platinum_sharpshooter">ATIRADOR PLATINA</string>
     <string name="rank_gold_ranger">PATRULHEIRO OURO</string>
@@ -503,7 +503,7 @@
     <string name="ai_coach_local_pro_headline">Reflexos em Nível de Torneio</string>
     <string name="ai_coach_local_pro_diagnosis">Ótimo equilíbrio: %1$d%% de precisão em %2$dms de reação média com %3$d críticos e sequência %4$dx.</string>
     <string name="ai_coach_local_pro_drill" formatted="false">Suba para Apex Predator e busque 90%+ de precisão abaixo de 420ms.</string>
-    <string name="ai_coach_local_pro_name">Micro-Comp Pro</string>
+    <string name="ai_coach_local_pro_name">Micro-Competitivo Pro</string>
     <string name="ai_coach_local_pro_tweak">Otimizada para perfil compacto Micro-Plus 24dp com máxima clareza para headshots.</string>
     <string name="designs_screen_title">Designs de mira</string>
     <string name="designs_screen_subtitle">%1$d retículas predefinidas prontas para aplicar</string>
@@ -526,7 +526,7 @@
     <string name="designs_cat_sniper">Sniper</string>
     <string name="designs_cat_scifi">HUD Ficção Científica</string>
     <string name="design_role_esports">Esports</string>
-    <string name="design_role_rifles">Rifles</string>
+    <string name="design_role_rifles">Fuzis</string>
     <string name="design_role_headshot">Tiro na Cabeça</string>
     <string name="design_role_allround">Versátil</string>
     <string name="design_role_onetap">Tiro Único</string>
@@ -601,7 +601,7 @@
     <string name="category_dot">Ponto</string>
     <string name="category_circle">Círculo</string>
     <string name="category_tactical">Tática</string>
-    <string name="category_sniper">Sniper</string>
+    <string name="category_sniper">Precisão</string>
     <string name="category_scifi">Ficção científica</string>
     <string name="category_ai_contrast">Contraste IA</string>
     <string name="category_ai_coach">Treinador IA</string>
@@ -683,4 +683,72 @@
     <string name="overlay_rotation_label">Rotação da sobreposição</string>
     <string name="cd_decrease_rotation">Diminuir o ângulo de rotação da mira</string>
     <string name="cd_increase_rotation">Aumentar o ângulo de rotação da mira</string>
+    <!-- Custom Crosshair Presets & Quick Switching -->
+    <string name="custom_presets_section_title">PREDEFINIÇÕES PERSONALIZADAS</string>
+    <string name="quick_presets_view_all">Ver tudo</string>
+    <string name="quick_presets_empty_desc">Salve tamanho, cor, opacidade e rotação atuais como uma predefinição nomeada para alternar rapidamente.</string>
+    <string name="quick_presets_modified_label">Editado \"%1$s\"</string>
+    <string name="btn_update_preset">ATUALIZAR PREDEFINIÇÃO</string>
+    <string name="btn_update_short">Atualizar</string>
+    <string name="btn_save_new_short">Salvar nova</string>
+    <string name="save_preset_mode_new">Salvar como nova</string>
+    <string name="save_preset_mode_overwrite">Atualizar \"%1$s\"</string>
+    <string name="preset_name_placeholder">ex. Sniper 45°, CQB Ciano</string>
+    <string name="preset_name_required_error">Digite um nome para esta predefinição.</string>
+    <string name="preset_spec_color">Cor</string>
+    <string name="preset_compact_specs_format">%1$ddp · %2$d%% · %3$d°</string>
+    <string name="preset_saved_toast">Predefinição salva: %1$s</string>
+    <string name="preset_updated_toast">Predefinição atualizada: %1$s</string>
+    <string name="preset_switched_toast">Alternado para %1$s</string>
+    <string name="preset_renamed_toast">Renomeado para %1$s</string>
+    <string name="preset_deleted_toast">Predefinição excluída: %1$s</string>
+    <string name="rename_preset_title">Renomear predefinição</string>
+    <string name="btn_rename">Renomear</string>
+    <string name="menu_overwrite_current">Atualizar com ajustes atuais</string>
+    <string name="delete_preset_confirm_title">Excluir predefinição?</string>
+    <string name="delete_preset_confirm_msg">Excluir \"%1$s\"? Esta predefinição personalizada será removida permanentemente.</string>
+    <string name="custom_presets_empty_hint">Salve tamanho, cor, opacidade e rotação para alternar com um toque.</string>
+    <string name="cd_preset_options">Opções da predefinição</string>
+    <string name="cd_rename_preset">Renomear predefinição</string>
+    <string name="cd_quick_switch_preset">Alternar para a próxima predefinição</string>
+    <string name="hud_presets_label">PREDEFINIÇÕES</string>
+    <!-- Refactored UI Formatting & Localized Event Activity Labels -->
+    <string name="studio_rotation_with_value">%1$s (%2$s)</string>
+    <string name="studio_offset_with_coords">%1$s %2$s</string>
+    <string name="share_app_body_format">%1$s
+%2$s</string>
+    <string name="event_name_app_open">App aberto</string>
+    <string name="event_name_splash_complete">Inicialização concluída</string>
+    <string name="event_name_onboarding_complete">Introdução concluída</string>
+    <string name="event_name_screen_view">Tela visualizada</string>
+    <string name="event_name_overlay_started">Sobreposição iniciada</string>
+    <string name="event_name_overlay_stopped">Sobreposição parada</string>
+    <string name="event_name_overlay_session_completed">Sessão de sobreposição encerrada</string>
+    <string name="event_name_overlay_calibration_toggled">Calibração HUD alternada</string>
+    <string name="event_name_reticle_customized">Mira personalizada</string>
+    <string name="event_name_preset_equipped">Predefinição equipada</string>
+    <string name="event_name_preset_saved">Predefinição salva</string>
+    <string name="event_name_preset_deleted">Predefinição excluída</string>
+    <string name="event_name_preset_imported">Predefinição importada</string>
+    <string name="event_name_preset_shared">Predefinição compartilhada</string>
+    <string name="event_name_preset_favorited">Favorito alternado</string>
+    <string name="event_name_aim_drill_started">Treino de mira iniciado</string>
+    <string name="event_name_aim_drill_completed">Treino de mira concluído</string>
+    <string name="event_name_permission_overlay_granted">Permissão de sobreposição concedida</string>
+    <string name="event_name_permission_notifications_granted">Permissão de notificações concedida</string>
+    <string name="event_name_theme_changed">Tema alterado</string>
+    <string name="event_name_settings_reset">Configurações redefinidas</string>
+    <string name="event_name_update_checked">Atualizações verificadas</string>
+    <string name="event_name_popup_impression">Aviso exibido</string>
+    <string name="event_name_popup_accepted">Aviso aceito</string>
+    <string name="event_name_popup_dismissed">Aviso fechado</string>
+    <string name="event_name_popup_never_ask">Aviso silenciado</string>
+    <string name="event_name_popup_suppressed">Aviso ignorado</string>
+    <string name="event_name_ai_architect_run">Arquiteto IA executado</string>
+    <string name="event_name_ai_vision_run">Análise de contraste IA executada</string>
+    <string name="event_name_ai_coach_run">Treinador IA executado</string>
+    <string name="event_name_ai_tier_fallback">Alternância IA Eco</string>
+    <string name="event_name_ai_grace_claimed">Créditos bônus resgatados</string>
+    <string name="event_name_ai_eco_mode_toggled">Modo Eco Lite alternado</string>
+    <string name="event_name_ai_google_sign_in">Login com Google</string>
 </resources>

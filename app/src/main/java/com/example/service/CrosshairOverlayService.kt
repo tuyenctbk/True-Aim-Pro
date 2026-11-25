@@ -25,6 +25,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,16 +39,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.RotateRight
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -67,12 +71,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
@@ -132,6 +138,8 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
 
     private val isCrosshairVisibleState = mutableStateOf(true)
     private var isCalibrateMode = false
+    private var lastNotifiedReticleTitle: String? = null
+    private var lastNotifiedVisibility: Boolean? = null
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -201,6 +209,11 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
         createNotificationChannel()
         startForegroundCompat(buildNotification(repository.activeConfig.value))
 
+        if (!Settings.canDrawOverlays(this)) {
+            stopSelf()
+            return
+        }
+
         initSensors()
 
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
@@ -213,7 +226,7 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
             repository.activeConfig.collectLatest { config ->
                 currentActiveConfig = config
                 updateCrosshairPosition(config)
-                updateNotification(config)
+                updateNotificationIfChanged(config)
             }
         }
 
@@ -452,10 +465,12 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
         }
 
         val reticleTitle = com.example.model.PredefinedCrosshairCatalog.resolveDisplayName(this, config)
+        lastNotifiedReticleTitle = reticleTitle
+        lastNotifiedVisibility = isCrosshairVisibleState.value
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_active_title, getString(R.string.app_name)))
             .setContentText(getString(R.string.notification_active_reticle, reticleTitle))
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_crosshair)
             .setOngoing(true)
             .setSilent(true)
             .setContentIntent(openPending)
@@ -464,6 +479,13 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
             .addAction(0, getString(R.string.notification_exit), stopPending)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
+    }
+
+    private fun updateNotificationIfChanged(config: CrosshairConfig) {
+        val reticleTitle = com.example.model.PredefinedCrosshairCatalog.resolveDisplayName(this, config)
+        val visible = isCrosshairVisibleState.value
+        if (reticleTitle == lastNotifiedReticleTitle && visible == lastNotifiedVisibility) return
+        updateNotification(config)
     }
 
     private fun updateNotification(config: CrosshairConfig) {
@@ -554,10 +576,20 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val config by repository.activeConfig.collectAsState()
+                val savedPresets by repository.savedPresets.collectAsState()
                 val isDark by repository.isDarkMode.collectAsState()
                 MyApplicationTheme(darkTheme = isDark) {
                     CalibrateFloatingWidget(
                         config = config,
+                        savedPresets = savedPresets,
+                        onSelectPreset = { preset ->
+                            repository.updateActiveConfig(preset)
+                            eventTracker.logEvent(
+                                AppEventType.PRESET_EQUIPPED,
+                                "overlay",
+                                mapOf("preset_name" to preset.name, "style" to preset.style.name, "source" to "hud_panel")
+                            )
+                        },
                         onNudge = { dx, dy ->
                             val updated = config.copy(
                                 offsetX = config.offsetX + dx,
@@ -673,14 +705,25 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val isVisible = isCrosshairVisibleState.value
+                val savedPresets by repository.savedPresets.collectAsState()
                 val isDark by repository.isDarkMode.collectAsState()
                 MyApplicationTheme(darkTheme = isDark) {
                     PersistentFloatingQuickToggle(
                         isCrosshairVisible = isVisible,
+                        hasCustomPresets = savedPresets.isNotEmpty(),
                         onToggle = {
                             isCrosshairVisibleState.value = !isCrosshairVisibleState.value
                             updateEffectiveVisibility()
                             updateNotification(repository.activeConfig.value)
+                        },
+                        onCyclePreset = {
+                            repository.switchToNextCustomPreset()?.let { switched ->
+                                eventTracker.logEvent(
+                                    AppEventType.PRESET_EQUIPPED,
+                                    "overlay",
+                                    mapOf("preset_name" to switched.name, "style" to switched.style.name, "source" to "hud_quick_cycle")
+                                )
+                            }
                         },
                         onToggleControls = {
                             isCalibrateMode = !isCalibrateMode
@@ -713,7 +756,9 @@ class CrosshairOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
 @Composable
 private fun PersistentFloatingQuickToggle(
     isCrosshairVisible: Boolean,
+    hasCustomPresets: Boolean,
     onToggle: () -> Unit,
+    onCyclePreset: () -> Unit,
     onToggleControls: () -> Unit
 ) {
     Surface(
@@ -777,6 +822,30 @@ private fun PersistentFloatingQuickToggle(
                     modifier = Modifier.size(16.dp)
                 )
             }
+
+            if (hasCustomPresets) {
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(18.dp)
+                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.6f))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clickable { onCyclePreset() }
+                        .padding(horizontal = 9.dp, vertical = 8.dp)
+                        .testTag("hud_quick_cycle_preset_btn"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = stringResource(R.string.cd_quick_switch_preset),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -784,6 +853,8 @@ private fun PersistentFloatingQuickToggle(
 @Composable
 private fun CalibrateFloatingWidget(
     config: CrosshairConfig,
+    savedPresets: List<CrosshairConfig>,
+    onSelectPreset: (CrosshairConfig) -> Unit,
     onNudge: (dx: Int, dy: Int) -> Unit,
     onReset: () -> Unit,
     onScaleChange: (Float) -> Unit,
@@ -843,7 +914,7 @@ private fun CalibrateFloatingWidget(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                MiniNudgeButton(icon = Icons.Default.KeyboardArrowLeft) { onNudge(-1, 0) }
+                MiniNudgeButton(icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft) { onNudge(-1, 0) }
                 IconButton(
                     onClick = onReset,
                     modifier = Modifier
@@ -858,7 +929,7 @@ private fun CalibrateFloatingWidget(
                         modifier = Modifier.size(18.dp)
                     )
                 }
-                MiniNudgeButton(icon = Icons.Default.KeyboardArrowRight) { onNudge(1, 0) }
+                MiniNudgeButton(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight) { onNudge(1, 0) }
             }
             Spacer(modifier = Modifier.height(4.dp))
             MiniNudgeButton(icon = Icons.Default.KeyboardArrowDown) { onNudge(0, 1) }
@@ -937,7 +1008,7 @@ private fun CalibrateFloatingWidget(
                 modifier = Modifier.width(188.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.RotateRight,
+                    imageVector = Icons.AutoMirrored.Filled.RotateRight,
                     contentDescription = stringResource(R.string.overlay_rotation_label),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(14.dp)
@@ -964,7 +1035,82 @@ private fun CalibrateFloatingWidget(
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            if (savedPresets.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Column(modifier = Modifier.width(188.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Bookmark,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.hud_presets_label),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.6.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        modifier = Modifier
+                            .width(188.dp)
+                            .horizontalScroll(rememberScrollState())
+                            .testTag("hud_presets_quick_row"),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        savedPresets.forEach { preset ->
+                            val isSelected = config.id == preset.id
+                            val displayName = preset.name.ifBlank {
+                                stringResource(R.string.default_custom_crosshair_name)
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surfaceContainer
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.outline,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable { onSelectPreset(preset) }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                                    .testTag("hud_preset_chip_${preset.id}"),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(preset.primaryColorHex or 0xFF000000L))
+                                        .border(0.6.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                                )
+                                Text(
+                                    text = displayName,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = onClose,

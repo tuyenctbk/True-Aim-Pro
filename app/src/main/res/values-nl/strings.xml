@@ -10,8 +10,8 @@
     <string name="live_preview_header">LIVE VOORVERTONING</string>
     <string name="background">Achtergrond</string>
     <string name="overlay_control">OVERLAY-BEDIENING</string>
-    <string name="start_overlay">START OVERLAY</string>
-    <string name="stop_overlay">STOP OVERLAY</string>
+    <string name="start_overlay">OVERLAY STARTEN</string>
+    <string name="stop_overlay">OVERLAY STOPPEN</string>
     <string name="floating_toggle_desc">Permanente zwevende snelschakelaar</string>
     <string name="style">Vizierstijl</string>
     <string name="size">Grootte</string>
@@ -38,7 +38,7 @@
     <string name="avg_session">GEM. SESSIE</string>
     <string name="accumulated_hud_time">Totale HUD-tijd</string>
     <string name="live_timer_ticking">Timer loopt</string>
-    <string name="overlay_offline">Overlay offline</string>
+    <string name="overlay_offline">Overlay uitgeschakeld</string>
     <string name="overlay_launches">Overlay-starts</string>
     <string name="duration_per_run">Duur per ronde</string>
     <string name="active_live">ACTIEF LIVE</string>
@@ -90,7 +90,7 @@
     <string name="share_popup_desc">Help je teamgenoten nauwkeuriger te richten op het slagveld. Deel TrueAim Pro met je squad!</string>
     <string name="share_popup_btn">App delen met team</string>
     <string name="share_popup_later">Misschien later</string>
-    <string name="style_settings_header">CROSSHAIR STYLE SETTINGS</string>
+    <string name="style_settings_header">VIZIERSTIJL-INSTELLINGEN</string>
     <string name="gallery_header">VECTORVIZIER-GALERIJ</string>
     <string name="gallery_subtitle">Kies uit vooraf ontworpen vectorvizieren</string>
     <string name="reset_session_timer_title">Gebruiksstatistieken wissen?</string>
@@ -283,7 +283,7 @@
     <string name="cd_tap_target">Doelindicator</string>
     <string name="cd_copy_code">Code kopiëren</string>
     <string name="cd_star_rating">Ster %1$d</string>
-    <string name="rank_sss_pro_esports">SSS • PRO ESPORTS</string>
+    <string name="rank_sss_pro_esports">SSS • PRO E-SPORTS</string>
     <string name="rank_diamond_aim">DIAMANT DOEL</string>
     <string name="rank_platinum_sharpshooter">PLATINA SCHERPSCHUTTER</string>
     <string name="rank_gold_ranger">GOUD RANGER</string>
@@ -315,8 +315,8 @@
     <string name="style_hollow_diamond">Holle Ruit</string>
     <string name="style_cross_circle">Kruis in Cirkel</string>
     <string name="style_corner_brackets">Hoekhaken</string>
-    <string name="style_sonar_radar">Sonar Radar</string>
-    <string name="style_micro_plus">Micro Plus</string>
+    <string name="style_sonar_radar">Sonarradar</string>
+    <string name="style_micro_plus">Microplus</string>
     <string name="style_pulse_cross">Puls Kruis</string>
     <string name="trainer_hit_crit">KRIT +%1$d</string>
     <string name="trainer_hit_regular">+%1$d</string>
@@ -340,7 +340,7 @@
     <string name="recent_events_label">RECENTE GEBEURTENISSEN</string>
     <string name="btn_clear_log">Log wissen</string>
     <string name="event_log_empty">Nog geen gebeurtenissen vastgelegd.</string>
-    <string name="community_updates_title">UPDATES &amp; COMMUNITY</string>
+    <string name="community_updates_title">UPDATES &amp; GEMEENSCHAP</string>
     <string name="btn_check_updates">Check updates</string>
     <string name="btn_rate_app">Beoordeel app</string>
     <string name="nav_ai_lab">AI-Lab</string>
@@ -374,7 +374,7 @@
     <string name="ai_recovery_retry_eco">Opnieuw met Eco Lite AI</string>
     <string name="ai_recovery_reset_countdown">Gratis reset over %1$s</string>
     <string name="ai_tier_primary">PRIMAIRE AI</string>
-    <string name="ai_tier_eco_lite">ECO LITE AI</string>
+    <string name="ai_tier_eco_lite">ECO LITE-AI</string>
     <string name="ai_tier_local">OP APPARAAT • 0 CREDITS</string>
     <string name="ai_tier_byok">EIGEN SLEUTEL</string>
     <string name="ai_badge_cached">IN CACHE • 0 TOKENS</string>
@@ -395,7 +395,7 @@
     <string name="ai_byok_save_btn">Sleutel opslaan</string>
     <string name="ai_vision_decode_failed">Geselecteerde screenshot kon niet worden geladen.</string>
     <string name="ai_reticle_applied_toast">Ingesteld &amp; opgeslagen: %1$s</string>
-    <string name="ai_tab_architect">Architect</string>
+    <string name="ai_tab_architect">Ontwerper</string>
     <string name="ai_tab_contrast">Contrast</string>
     <string name="ai_tab_coach">Coach</string>
     <string name="ai_prompt_chip_valorant">Valorant Vandal scherpe one-tap stip</string>
@@ -503,7 +503,7 @@
     <string name="ai_coach_local_pro_headline">Toernooiklasse reflexvorm</string>
     <string name="ai_coach_local_pro_diagnosis">Sterke balans: %1$d%% nauwkeurigheid bij %2$dms gemiddelde reactie met %3$d crits en %4$dx reeks.</string>
     <string name="ai_coach_local_pro_drill" formatted="false">Ga naar Apex Predator en mik op 90%+ nauwkeurigheid onder 420ms.</string>
-    <string name="ai_coach_local_pro_name">Micro-Comp Pro</string>
+    <string name="ai_coach_local_pro_name">Micro-Competitie Pro</string>
     <string name="ai_coach_local_pro_tweak">Gestroomlijnd naar een compact 24dp Micro-Plus-profiel voor maximale headshot-helderheid.</string>
     <string name="designs_screen_title">Vizierontwerpen</string>
     <string name="designs_screen_subtitle">%1$d vooraf ingestelde vizieren klaar voor gebruik</string>
@@ -524,7 +524,7 @@
     <string name="designs_cat_dots">Precisiepunten</string>
     <string name="designs_cat_tactical">Tactisch CQB</string>
     <string name="designs_cat_sniper">Sluipschutter</string>
-    <string name="designs_cat_scifi">Sci-Fi HUD</string>
+    <string name="designs_cat_scifi">Sciencefiction-HUD</string>
     <string name="design_role_esports">E-sports</string>
     <string name="design_role_rifles">Geweren</string>
     <string name="design_role_headshot">Hoofdschot</string>
@@ -552,7 +552,7 @@
     <string name="design_open_t_desc">Verwijdert de bovenste lijn zodat verre doelen volledig zichtbaar blijven.</string>
     <string name="design_cross_circle_title">Dubbele Kruisring</string>
     <string name="design_cross_circle_desc">Gebalanceerd kruis binnen een stabiliserende witte ring.</string>
-    <string name="design_onetap_dot_title">Valorant One-Tap</string>
+    <string name="design_onetap_dot_title">Valorant Eén-Tik</string>
     <string name="design_onetap_dot_desc">Haarscherpe microcirkel en stip afgestemd op enkele hoofdschoten.</string>
     <string name="design_crimson_dot_title">Karmozijnen Punt</string>
     <string name="design_crimson_dot_desc">Ultracompacte rode stip die opvalt tegen sneeuw en licht zand.</string>
@@ -578,7 +578,7 @@
     <string name="design_cyber_hex_desc">Futuristisch magenta zeshoekframe met scherpe buitenstreepjes.</string>
     <string name="design_tri_blade_title">Drieblad Vanguard</string>
     <string name="design_tri_blade_desc">Driebladig lime vizier met open zichtveld voor snelle arenashooters.</string>
-    <string name="design_sonar_radar_title">Sonar Radar 360</string>
+    <string name="design_sonar_radar_title">Sonarradar 360</string>
     <string name="design_sonar_radar_desc">Dubbele concentrische cyaan radarringen voor stabiel richten.</string>
     <string name="design_pulse_cross_title">Biometrische Puls</string>
     <string name="design_pulse_cross_desc">Opvallende karmozijnrode golflijn gecentreerd rond een precisiepunt.</string>
@@ -602,7 +602,7 @@
     <string name="category_circle">Cirkel</string>
     <string name="category_tactical">Tactisch</string>
     <string name="category_sniper">Sluipschutter</string>
-    <string name="category_scifi">Sci-Fi</string>
+    <string name="category_scifi">Sciencefiction</string>
     <string name="category_ai_contrast">AI-contrast</string>
     <string name="category_ai_coach">AI-coach</string>
     <string name="ai_empty_cloud_response_error">Leeg antwoord van de cloud-AI.</string>
@@ -683,4 +683,72 @@
     <string name="overlay_rotation_label">Overlay-rotatie</string>
     <string name="cd_decrease_rotation">Rotatiehoek van vizier verkleinen</string>
     <string name="cd_increase_rotation">Rotatiehoek van vizier vergroten</string>
+    <!-- Custom Crosshair Presets & Quick Switching -->
+    <string name="custom_presets_section_title">AANGEPASTE PRESETS</string>
+    <string name="quick_presets_view_all">Alles bekijken</string>
+    <string name="quick_presets_empty_desc">Sla je huidige grootte, kleur, dekking en rotatie op als preset met naam om snel te wisselen.</string>
+    <string name="quick_presets_modified_label">Bewerkt: \"%1$s\"</string>
+    <string name="btn_update_preset">PRESET BIJWERKEN</string>
+    <string name="btn_update_short">Bijwerken</string>
+    <string name="btn_save_new_short">Nieuw opslaan</string>
+    <string name="save_preset_mode_new">Als nieuw opslaan</string>
+    <string name="save_preset_mode_overwrite">\"%1$s\" bijwerken</string>
+    <string name="preset_name_placeholder">bijv. Sniper 45°, CQB Cyaan</string>
+    <string name="preset_name_required_error">Voer een naam in voor deze preset.</string>
+    <string name="preset_spec_color">Kleur</string>
+    <string name="preset_compact_specs_format">%1$ddp · %2$d%% · %3$d°</string>
+    <string name="preset_saved_toast">Preset opgeslagen: %1$s</string>
+    <string name="preset_updated_toast">Preset bijgewerkt: %1$s</string>
+    <string name="preset_switched_toast">Gewisseld naar %1$s</string>
+    <string name="preset_renamed_toast">Preset hernoemd naar %1$s</string>
+    <string name="preset_deleted_toast">Preset verwijderd: %1$s</string>
+    <string name="rename_preset_title">Aangepaste preset hernoemen</string>
+    <string name="btn_rename">Hernoemen</string>
+    <string name="menu_overwrite_current">Bijwerken met huidige instellingen</string>
+    <string name="delete_preset_confirm_title">Preset verwijderen?</string>
+    <string name="delete_preset_confirm_msg">\"%1$s\" verwijderen? Deze aangepaste crosshair-preset wordt permanent verwijderd.</string>
+    <string name="custom_presets_empty_hint">Sla grootte, kleur, dekking en rotatie op om met één tik te wisselen.</string>
+    <string name="cd_preset_options">Preset-opties</string>
+    <string name="cd_rename_preset">Preset hernoemen</string>
+    <string name="cd_quick_switch_preset">Wisselen naar volgende preset</string>
+    <string name="hud_presets_label">VOORINSTELLINGEN</string>
+    <!-- Refactored UI Formatting & Localized Event Activity Labels -->
+    <string name="studio_rotation_with_value">%1$s (%2$s)</string>
+    <string name="studio_offset_with_coords">%1$s %2$s</string>
+    <string name="share_app_body_format">%1$s
+%2$s</string>
+    <string name="event_name_app_open">App geopend</string>
+    <string name="event_name_splash_complete">Opstarten voltooid</string>
+    <string name="event_name_onboarding_complete">Introductie voltooid</string>
+    <string name="event_name_screen_view">Scherm bekeken</string>
+    <string name="event_name_overlay_started">Overlay gestart</string>
+    <string name="event_name_overlay_stopped">Overlay gestopt</string>
+    <string name="event_name_overlay_session_completed">Overlay-sessie beëindigd</string>
+    <string name="event_name_overlay_calibration_toggled">HUD-kalibratie omgeschakeld</string>
+    <string name="event_name_reticle_customized">Vizier aangepast</string>
+    <string name="event_name_preset_equipped">Voorinstelling toegepast</string>
+    <string name="event_name_preset_saved">Voorinstelling opgeslagen</string>
+    <string name="event_name_preset_deleted">Voorinstelling verwijderd</string>
+    <string name="event_name_preset_imported">Voorinstelling geïmporteerd</string>
+    <string name="event_name_preset_shared">Voorinstelling gedeeld</string>
+    <string name="event_name_preset_favorited">Favoriet gewijzigd</string>
+    <string name="event_name_aim_drill_started">Richtoefening gestart</string>
+    <string name="event_name_aim_drill_completed">Richtoefening voltooid</string>
+    <string name="event_name_permission_overlay_granted">Overlay-toestemming verleend</string>
+    <string name="event_name_permission_notifications_granted">Meldingstoestemming verleend</string>
+    <string name="event_name_theme_changed">Thema gewijzigd</string>
+    <string name="event_name_settings_reset">Instellingen gereset</string>
+    <string name="event_name_update_checked">Updates gecontroleerd</string>
+    <string name="event_name_popup_impression">Melding getoond</string>
+    <string name="event_name_popup_accepted">Melding geaccepteerd</string>
+    <string name="event_name_popup_dismissed">Melding gesloten</string>
+    <string name="event_name_popup_never_ask">Melding gedempt</string>
+    <string name="event_name_popup_suppressed">Melding overgeslagen</string>
+    <string name="event_name_ai_architect_run">AI-ontwerper uitgevoerd</string>
+    <string name="event_name_ai_vision_run">AI-contrastanalyse uitgevoerd</string>
+    <string name="event_name_ai_coach_run">AI-coach uitgevoerd</string>
+    <string name="event_name_ai_tier_fallback">AI Eco-terugval</string>
+    <string name="event_name_ai_grace_claimed">Bonuscredits geclaimd</string>
+    <string name="event_name_ai_eco_mode_toggled">Eco Lite-modus omgeschakeld</string>
+    <string name="event_name_ai_google_sign_in">Inloggen met Google</string>
 </resources>

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.example.R
 
-enum class CrosshairStyle(val category: String, @StringRes val nameRes: Int) {
+enum class CrosshairStyle(val category: String, @param:StringRes val nameRes: Int) {
     CLASSIC_CROSS(CrosshairConfig.CATEGORY_CLASSIC, R.string.style_classic_cross),
     PRECISION_DOT(CrosshairConfig.CATEGORY_DOT, R.string.style_precision_dot),
     TACTICAL_CIRCLE(CrosshairConfig.CATEGORY_TACTICAL, R.string.style_tactical_circle),
@@ -44,6 +44,36 @@ data class CrosshairConfig(
     val isCustom: Boolean = false,
     val category: String = CATEGORY_CLASSIC
 ) {
+    fun normalizedForPreset(): CrosshairConfig = copy(
+        sizeDp = sizeDp.coerceIn(14f, 90f),
+        opacity = opacity.coerceIn(0.10f, 1.00f),
+        rotationDeg = ((rotationDeg % 360f) + 360f) % 360f,
+        primaryColorHex = primaryColorHex or 0xFF000000L,
+        outlineColorHex = outlineColorHex or 0xFF000000L
+    )
+
+    fun matchesVisualSettings(other: CrosshairConfig): Boolean {
+        val thisRot = ((rotationDeg % 360f) + 360f) % 360f
+        val otherRot = ((other.rotationDeg % 360f) + 360f) % 360f
+        val rotDiff = kotlin.math.abs(thisRot - otherRot)
+        val wrappedRotDiff = minOf(rotDiff, 360f - rotDiff)
+        return style == other.style &&
+            kotlin.math.abs(sizeDp - other.sizeDp) < 0.05f &&
+            kotlin.math.abs(thicknessDp - other.thicknessDp) < 0.05f &&
+            kotlin.math.abs(gapDp - other.gapDp) < 0.05f &&
+            centerDot == other.centerDot &&
+            kotlin.math.abs(centerDotSizeDp - other.centerDotSizeDp) < 0.05f &&
+            wrappedRotDiff < 0.5f &&
+            kotlin.math.abs(opacity - other.opacity) < 0.005f &&
+            (primaryColorHex or 0xFF000000L) == (other.primaryColorHex or 0xFF000000L) &&
+            outlineEnabled == other.outlineEnabled &&
+            (outlineColorHex or 0xFF000000L) == (other.outlineColorHex or 0xFF000000L) &&
+            kotlin.math.abs(outlineThicknessDp - other.outlineThicknessDp) < 0.05f &&
+            tStyle == other.tStyle &&
+            offsetX == other.offsetX &&
+            offsetY == other.offsetY
+    }
+
     fun toJson(): String {
         val json = org.json.JSONObject()
         json.put("id", id)

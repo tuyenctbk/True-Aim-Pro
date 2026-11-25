@@ -173,10 +173,27 @@ fun SplashScreen(
                         )
                     }
 
-                    // Inner subtle calibration circle
+                    // Counter-rotating inner precision calibration arcs
+                    val innerR = outerRadius * 0.84f
+                    val innerSweep = 34f * ringSweep.value
+                    val innerInset = outerRadius - innerR + strokePx
+                    for (i in 0 until 4) {
+                        val innerStart = -(outerAngle * 1.4f) + (i * 90f) + 28f
+                        drawArc(
+                            color = CyanLaser.copy(alpha = 0.55f * ringSweep.value),
+                            startAngle = innerStart,
+                            sweepAngle = innerSweep,
+                            useCenter = false,
+                            topLeft = Offset(innerInset, innerInset),
+                            size = androidx.compose.ui.geometry.Size(innerR * 2f, innerR * 2f),
+                            style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                    }
+
+                    // Expanding subtle lock-on pulse ring
                     drawCircle(
-                        color = CyanLaser.copy(alpha = 0.22f * ringSweep.value),
-                        radius = outerRadius * 0.80f,
+                        color = NeonGreen.copy(alpha = 0.14f * glowPulse),
+                        radius = outerRadius * (0.90f + 0.08f * glowPulse),
                         style = Stroke(width = 1.dp.toPx())
                     )
                 }

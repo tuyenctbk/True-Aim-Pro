@@ -40,6 +40,10 @@ class CrosshairRepository private constructor(context: Context) {
     private val database = AppDatabase.getDatabase(appContext)
     private val presetDao = database.presetDao()
     private val eventTracker = AppEventTracker.getInstance(appContext)
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private val presetWriteDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val presetStateLock = Any()
+    private var localPresetVersion = 0L
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var sessionTimerJob: Job? = null
@@ -74,7 +78,31 @@ class CrosshairRepository private constructor(context: Context) {
     init {
         repositoryScope.launch {
             presetDao.getAllPresets().collectLatest { entities ->
-                _savedPresets.value = entities.map { it.toCrosshairConfig() }
+                synchronized(presetStateLock) {
+                    if (localPresetVersion == 0L) {
+                        _savedPresets.value = entities.map { it.toCrosshairConfig() }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun applyOptimisticPresetWrite(
+        optimisticUpdate: (List<CrosshairConfig>) -> List<CrosshairConfig>,
+        dbWrite: suspend () -> Unit
+    ) {
+        val writeVersion = synchronized(presetStateLock) {
+            val nextVersion = ++localPresetVersion
+            _savedPresets.value = optimisticUpdate(_savedPresets.value)
+            nextVersion
+        }
+        repositoryScope.launch(presetWriteDispatcher) {
+            dbWrite()
+            val snapshot = presetDao.getAllPresetsSnapshot().map { it.toCrosshairConfig() }
+            synchronized(presetStateLock) {
+                if (localPresetVersion == writeVersion) {
+                    _savedPresets.value = snapshot
+                }
             }
         }
     }
@@ -276,18 +304,57 @@ class CrosshairRepository private constructor(context: Context) {
             .take(8)
     }
 
-    fun saveCustomPreset(preset: CrosshairConfig) {
-        val updatedPreset = preset.copy(
+    fun saveCustomPreset(preset: CrosshairConfig): CrosshairConfig {
+        val normalized = preset.normalizedForPreset()
+        val updatedPreset = normalized.copy(
             isCustom = true,
-            category = if (preset.category.isNotBlank() && preset.category != CrosshairConfig.CATEGORY_CUSTOM) {
-                preset.category
+            category = if (normalized.category.isNotBlank() && normalized.category != CrosshairConfig.CATEGORY_CUSTOM) {
+                normalized.category
             } else {
                 CrosshairConfig.CATEGORY_CUSTOM
             }
         )
-        repositoryScope.launch {
-            presetDao.insertPreset(PresetEntity.fromCrosshairConfig(updatedPreset))
+        applyOptimisticPresetWrite(
+            optimisticUpdate = { current ->
+                listOf(updatedPreset) + current.filterNot { it.id == updatedPreset.id }
+            },
+            dbWrite = {
+                presetDao.insertPreset(PresetEntity.fromCrosshairConfig(updatedPreset))
+            }
+        )
+        return updatedPreset
+    }
+
+    fun renameCustomPreset(id: String, newName: String): Boolean {
+        val cleanName = newName.trim()
+        if (cleanName.isEmpty()) return false
+        if (_activeConfig.value.id == id) {
+            updateActiveConfig(_activeConfig.value.copy(name = cleanName))
         }
+        applyOptimisticPresetWrite(
+            optimisticUpdate = { current ->
+                current.map { preset ->
+                    if (preset.id == id) preset.copy(name = cleanName) else preset
+                }
+            },
+            dbWrite = {
+                presetDao.updatePresetName(id, cleanName)
+            }
+        )
+        return true
+    }
+
+    fun switchToNextCustomPreset(): CrosshairConfig? {
+        val presets = _savedPresets.value
+        if (presets.isEmpty()) return null
+        val currentIndex = presets.indexOfFirst { it.id == _activeConfig.value.id }
+        val nextPreset = if (currentIndex == -1) {
+            presets.first()
+        } else {
+            presets[(currentIndex + 1) % presets.size]
+        }
+        updateActiveConfig(nextPreset)
+        return nextPreset
     }
 
     fun toggleFavorite(id: String): Boolean {
@@ -311,8 +378,16 @@ class CrosshairRepository private constructor(context: Context) {
     }
 
     fun deleteCustomPreset(id: String) {
-        repositoryScope.launch {
-            presetDao.deletePresetById(id)
+        applyOptimisticPresetWrite(
+            optimisticUpdate = { current -> current.filterNot { it.id == id } },
+            dbWrite = { presetDao.deletePresetById(id) }
+        )
+        if (_activeConfig.value.id == id) {
+            updateActiveConfig(
+                _activeConfig.value.copy(
+                    id = "detached_${System.currentTimeMillis()}"
+                )
+            )
         }
         if (id in _favoriteIds.value) {
             val next = _favoriteIds.value - id

@@ -16,17 +16,24 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,6 +72,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,8 +98,10 @@ import com.example.data.ai.configureAppCheck
 import com.example.data.engagement.SmartPopupProposal
 import com.example.ui.AiLabViewModel
 import com.example.ui.CrosshairViewModel
+import com.example.ui.components.DeletePresetConfirmDialog
 import com.example.ui.components.ImportCrosshairDialog
 import com.example.ui.components.PermissionExplanationDialog
+import com.example.ui.components.RenamePresetDialog
 import com.example.ui.components.SavePresetDialog
 import com.example.ui.components.ShareCrosshairDialog
 import com.example.ui.components.SmartRateAppDialog
@@ -151,12 +161,17 @@ fun CrosshairMainApp(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var selectedSection by remember { mutableIntStateOf(0) }
-    var showPredefinedDesigns by remember { mutableStateOf(false) }
+    var selectedSection by rememberSaveable { mutableIntStateOf(0) }
+    var showPredefinedDesigns by rememberSaveable { mutableStateOf(false) }
 
     val isSplashVisible by viewModel.isSplashVisible.collectAsState()
     val isOverlayActive by viewModel.isOverlayActive.collectAsState()
     val showSaveDialog by viewModel.showSaveDialog.collectAsState()
+    val savePresetDraftConfig by viewModel.savePresetDraftConfig.collectAsState()
+    val renamingPreset by viewModel.renamingPreset.collectAsState()
+    val deletingPreset by viewModel.deletingPreset.collectAsState()
+    val savedPresets by viewModel.savedPresets.collectAsState()
+    val presetFeedbackMessage by viewModel.presetFeedbackMessage.collectAsState()
     val showPermissionDialog by viewModel.showPermissionDialog.collectAsState()
     val showShareDialog by viewModel.showShareDialog.collectAsState()
     val showImportDialog by viewModel.showImportDialog.collectAsState()
@@ -231,6 +246,14 @@ fun CrosshairMainApp(
         }
     }
 
+    // Show Toast feedback when saving, updating, renaming, switching, or deleting custom presets
+    LaunchedEffect(presetFeedbackMessage) {
+        presetFeedbackMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            viewModel.clearPresetFeedbackMessage()
+        }
+    }
+
     AnimatedContent(
         targetState = Triple(isSplashVisible, hasCompletedOnboarding, Unit),
         transitionSpec = {
@@ -257,7 +280,12 @@ fun CrosshairMainApp(
                 AnimatedContent(
                     targetState = showPredefinedDesigns,
                     transitionSpec = {
-                        fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(180))
+                        if (targetState) {
+                            (slideInVertically(tween(260, easing = FastOutSlowInEasing)) { it / 14 } + fadeIn(tween(240))) togetherWith
+                                fadeOut(tween(180))
+                        } else {
+                            fadeIn(tween(220)) togetherWith fadeOut(tween(180))
+                        }
                     },
                     label = "predefined_designs_transition"
                 ) { showingDesigns ->
@@ -365,12 +393,37 @@ fun CrosshairMainApp(
 
     // Modal Dialogs (only active after splash & onboarding)
     if (!isSplashVisible && hasCompletedOnboarding) {
-        if (showSaveDialog) {
+        if (showSaveDialog || savePresetDraftConfig != null) {
             val activeConfig by viewModel.activeConfig.collectAsState()
+            val draftConfig = savePresetDraftConfig ?: activeConfig
             SavePresetDialog(
-                initialName = activeConfig.name,
+                config = draftConfig,
+                existingPresets = savedPresets,
                 onDismiss = { viewModel.closeSaveDialog() },
-                onSave = { name, gameTag -> viewModel.saveCurrentAsPreset(name, gameTag) }
+                onSave = { name, gameTag, overwriteId ->
+                    viewModel.saveConfigAsPreset(
+                        name = name,
+                        category = gameTag,
+                        sourceConfig = draftConfig,
+                        overwritePresetId = overwriteId
+                    )
+                }
+            )
+        }
+
+        renamingPreset?.let { presetToRename ->
+            RenamePresetDialog(
+                preset = presetToRename,
+                onDismiss = { viewModel.closeRenameDialog() },
+                onRename = { newName -> viewModel.renameCustomPreset(presetToRename, newName) }
+            )
+        }
+
+        deletingPreset?.let { presetToDelete ->
+            DeletePresetConfirmDialog(
+                preset = presetToDelete,
+                onDismiss = { viewModel.closeDeleteConfirmDialog() },
+                onConfirmDelete = { viewModel.confirmDeletePreset(presetToDelete) }
             )
         }
 
@@ -440,7 +493,13 @@ private fun MainSectionHost(
     AnimatedContent(
         targetState = selectedSection,
         transitionSpec = {
-            fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(180))
+            val forward = targetState > initialState
+            (slideInHorizontally(tween(240, easing = FastOutSlowInEasing)) { width ->
+                if (forward) width / 10 else -width / 10
+            } + fadeIn(tween(220))) togetherWith
+                (slideOutHorizontally(tween(180, easing = FastOutSlowInEasing)) { width ->
+                    if (forward) -width / 12 else width / 12
+                } + fadeOut(tween(160)))
         },
         label = "section_content_transition"
     ) { targetSection ->
@@ -617,22 +676,31 @@ fun TopGamerAppBar(
     isOverlayActive: Boolean,
     onToggleOverlay: () -> Unit
 ) {
-    val pulseTransition = rememberInfiniteTransition(label = "live_status_pulse")
-    val livePulse by pulseTransition.animateFloat(
-        initialValue = 0.6f,
-        targetValue = 1.25f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(850, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "livePulse"
-    )
+    val livePulse = if (isOverlayActive) {
+        val pulseTransition = rememberInfiniteTransition(label = "live_status_pulse")
+        pulseTransition.animateFloat(
+            initialValue = 0.72f,
+            targetValue = 1.25f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(850, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "livePulse"
+        ).value
+    } else {
+        1f
+    }
 
     val powerBg by animateColorAsState(
         targetValue = if (isOverlayActive) MaterialTheme.colorScheme.primary
         else MaterialTheme.colorScheme.primaryContainer,
         animationSpec = tween(250),
         label = "powerBg"
+    )
+    val powerScale by animateFloatAsState(
+        targetValue = if (isOverlayActive) 1.04f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        label = "powerScale"
     )
 
     Surface(
@@ -653,8 +721,14 @@ fun TopGamerAppBar(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
+                        .border(
+                            width = if (isOverlayActive) 1.5.dp else 1.dp,
+                            color = if (isOverlayActive) NeonGreen.copy(alpha = 0.85f)
+                            else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                            shape = CircleShape
+                        )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -672,10 +746,8 @@ fun TopGamerAppBar(
                             modifier = Modifier
                                 .size(7.dp)
                                 .graphicsLayer {
-                                    if (isOverlayActive) {
-                                        scaleX = livePulse
-                                        scaleY = livePulse
-                                    }
+                                    scaleX = livePulse
+                                    scaleY = livePulse
                                 }
                                 .clip(CircleShape)
                                 .background(
@@ -701,8 +773,17 @@ fun TopGamerAppBar(
             Box(
                 modifier = Modifier
                     .size(48.dp)
+                    .graphicsLayer {
+                        scaleX = powerScale
+                        scaleY = powerScale
+                    }
                     .clip(CircleShape)
                     .background(powerBg)
+                    .border(
+                        width = if (isOverlayActive) 1.5.dp else 1.dp,
+                        color = if (isOverlayActive) NeonGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
+                        shape = CircleShape
+                    )
                     .clickable { onToggleOverlay() }
                     .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
                     .testTag("appbar_quick_toggle"),
@@ -746,8 +827,24 @@ fun BottomGamerNavBar(
                 val titleStr = stringResource(section.titleRes)
                 val pillWidth by animateDpAsState(
                     targetValue = if (isSelected) 54.dp else 36.dp,
-                    animationSpec = tween(220, easing = FastOutSlowInEasing),
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    ),
                     label = "nav_pill_width_$index"
+                )
+                val iconScale by animateFloatAsState(
+                    targetValue = if (isSelected) 1.12f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "nav_icon_scale_$index"
+                )
+                val pillBg by animateColorAsState(
+                    targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                    animationSpec = tween(200),
+                    label = "nav_pill_bg_$index"
                 )
 
                 Column(
@@ -765,10 +862,7 @@ fun BottomGamerNavBar(
                             .width(pillWidth)
                             .height(34.dp)
                             .clip(RoundedCornerShape(17.dp))
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                else Color.Transparent
-                            ),
+                            .background(pillBg),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -776,7 +870,12 @@ fun BottomGamerNavBar(
                             contentDescription = titleStr,
                             tint = if (isSelected) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier
+                                .size(20.dp)
+                                .graphicsLayer {
+                                    scaleX = iconScale
+                                    scaleY = iconScale
+                                }
                         )
                     }
                     Spacer(modifier = Modifier.height(3.dp))
