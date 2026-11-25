@@ -2,66 +2,66 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Clean Minimalism Design Palette
-val MinimalPurple = Color(0xFF6750A4)
-val MinimalPurpleLight = Color(0xFFEADDFF)
-val MinimalPurpleContainer = Color(0xFFE8DEF8)
-val MinimalPurpleDark = Color(0xFF21005D)
+// --- Tactical Precision Light Palette ---
+val MinimalCanvas = Color(0xFFF6F8FC)
+val MinimalSurface = Color(0xFFFFFFFF)
+val MinimalSurfaceCard = Color(0xFFEEF2F8)
+val MinimalSurfaceContainer = Color(0xFFF1F5F9)
+val MinimalSurfaceHigh = Color(0xFFE2E8F0)
+val MinimalBorder = Color(0xFFCBD5E1)
+val MinimalBorderSubtle = Color(0xFFE2E8F0)
+
+// Brand Accents (Esports Emerald & Electric Indigo/Cyan)
+val MinimalPurple = Color(0xFF00B862)          // Signature Tactical Emerald (Light Primary)
+val MinimalPurpleLight = Color(0xFFD1FAE5)     // Emerald Tint Container
+val MinimalPurpleDark = Color(0xFF065F46)      // High-Contrast Deep Emerald
+val MinimalPurpleContainer = Color(0xFFECFDF5)
 
 val MinimalGreen = Color(0xFF10B981)
-val NeonGreen = Color(0xFF00FF41)
-val LaserCrimson = Color(0xFFBA1A1A)
-val SolarYellow = Color(0xFFE5A000)
-val CyberCyan = Color(0xFF6750A4) // Mapped to clean minimalist accent
-val CyberCyanDim = Color(0xFF7F67BE)
-val ElectricLime = Color(0xFF00E676)
-val ApexOrange = Color(0xFFE85D04)
-val UltraViolet = Color(0xFF8B5CF6)
+val MinimalGreenContainer = Color(0xFFD1FAE5)
+val MinimalGreenDark = Color(0xFF047857)
+
+val MinimalAmber = Color(0xFFF59E0B)
+val MinimalAmberContainer = Color(0xFFFEF3C7)
+
+// --- Tactical Obsidian Dark Palette (Matches App Icon & TV Banner #0A0E1A) ---
+val ObsidianCanvas = Color(0xFF0A0E1A)
+val ObsidianSurface = Color(0xFF111728)
+val ObsidianSurfaceContainer = Color(0xFF19223A)
+val ObsidianSurfaceHigh = Color(0xFF232F4D)
+val ObsidianBorder = Color(0xFF2B395B)
+val ObsidianTextPrimary = Color(0xFFF1F5F9)
+val ObsidianTextSecondary = Color(0xFF94A3B8)
+
+// Neutral Typography (Light mode reference)
+val TextPrimary = Color(0xFF0F172A)
+val TextSecondary = Color(0xFF475569)
+val TextTertiary = Color(0xFF64748B)
+
+// High-Contrast Reticle Colors (Visible over Game Graphics)
+val NeonGreen = Color(0xFF00E676)
+val CyanLaser = Color(0xFF00E5FF)
+val LaserCrimson = Color(0xFFFF1744)
+val SolarYellow = Color(0xFFFFEA00)
+val ElectricMagenta = Color(0xFFD500F9)
+val PlasmaOrange = Color(0xFFFF9100)
 val PolarWhite = Color(0xFFFFFFFF)
+val ToxicLime = Color(0xFF76FF03)
 
-// Clean Minimalism Surface & Canvas Colors
-val MinimalCanvas = Color(0xFFFDF7FF)
-val MinimalSurface = Color(0xFFFFFFFF)
-val MinimalSurfaceCard = Color(0xFFF3EDF7)
-val MinimalSurfaceContainer = Color(0xFFF7F2FA)
-val MinimalSurfaceHigh = Color(0xFFECE6F0)
-val MinimalBorder = Color(0xFFE7E0EC)
-val MinimalBorderSubtle = Color(0xFFCAC4D0)
+// Dark Canvas for Target Preview Arena
+val ArenaDarkCanvas = Color(0xFF0B101E)
+val CyberCyan = CyanLaser
+val DarkCanvas = ObsidianCanvas
+val DarkSurface = ObsidianSurface
+val DarkSurfaceHigh = ObsidianSurfaceHigh
 
-// Backward compatible surface aliases mapped to clean minimal palette
-val DarkCanvas = Color(0xFFFDF7FF)
-val DarkSurface = Color(0xFFFFFFFF)
-val DarkSurfaceVariant = Color(0xFFF3EDF7)
-val DarkSurfaceContainer = Color(0xFFF7F2FA)
-val DarkSurfaceHigh = Color(0xFFECE6F0)
-val DarkBorder = Color(0xFFE7E0EC)
-val DarkBorderGlow = Color(0xFF6750A4)
-
-// Dedicated dark color for the crosshair target preview box / arena
-val ArenaDarkCanvas = Color(0xFF1D1B20)
-val ArenaDarkSurface = Color(0xFF25232A)
-
-// Text Colors (High contrast, elegant typography)
-val TextPrimary = Color(0xFF1D1B20)
-val TextSecondary = Color(0xFF49454F)
-val TextTertiary = Color(0xFF79747E)
-
-// Color Swatches for Reticle customizer
 val ReticleColors = listOf(
-    Color(0xFF00FF41), // Vibrant Neon Green
-    Color(0xFF6750A4), // Minimal Iris Purple
-    Color(0xFFBA1A1A), // Precision Crimson
-    Color(0xFFE5A000), // Amber Yellow
-    Color(0xFFFFFFFF), // Polar White
-    Color(0xFF0284C7), // Azure Blue
-    Color(0xFFE85D04), // Warm Orange
-    Color(0xFF8B5CF6), // Soft Violet
-    Color(0xFFEC4899), // Pink
-    Color(0xFF000000), // Stealth Black
-    Color(0xFF06B6D4), // Cyan
-    Color(0xFF10B981), // Emerald
-    Color(0xFFD97706), // Gold
-    Color(0xFF6366F1), // Indigo
-    Color(0xFFF43F5E), // Rose
-    Color(0xFF64748B), // Slate Gray
+    NeonGreen,
+    CyanLaser,
+    LaserCrimson,
+    SolarYellow,
+    ElectricMagenta,
+    PlasmaOrange,
+    PolarWhite,
+    ToxicLime
 )

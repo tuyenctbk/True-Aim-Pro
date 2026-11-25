@@ -1,21 +1,25 @@
 package com.example.ui.components
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,9 +30,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ExpandLess
@@ -46,6 +47,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,24 +63,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.MinimalBorder
-import com.example.ui.theme.MinimalGreen
-import com.example.ui.theme.MinimalPurple
-import com.example.ui.theme.MinimalPurpleContainer
-import com.example.ui.theme.MinimalPurpleDark
-import com.example.ui.theme.MinimalPurpleLight
-import com.example.ui.theme.MinimalSurface
-import com.example.ui.theme.MinimalSurfaceContainer
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.TextTertiary
-
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
 import com.example.R
+import com.example.ui.theme.MinimalGreen
 
 data class TooltipStep(
     val stepNumber: Int,
@@ -96,9 +88,9 @@ fun GettingStartedTooltipSequence(
     onToggleOverlay: () -> Unit,
     onNavigateToGallery: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenPermissionTutorial: (() -> Unit)? = null,
     onDismissPermanently: (() -> Unit)? = null
 ) {
-    val context = LocalContext.current
     var currentStep by remember { mutableIntStateOf(0) }
     var isExpanded by remember { mutableStateOf(true) }
 
@@ -107,7 +99,11 @@ fun GettingStartedTooltipSequence(
             stepNumber = 1,
             title = stringResource(R.string.tooltip_step1_title),
             description = stringResource(R.string.tooltip_step1_desc),
-            actionLabel = if (isOverlayPermissionGranted) stringResource(R.string.tooltip_step1_granted) else stringResource(R.string.tooltip_step1_grant),
+            actionLabel = if (isOverlayPermissionGranted) {
+                stringResource(R.string.tooltip_step1_granted)
+            } else {
+                stringResource(R.string.tooltip_step1_grant)
+            },
             icon = Icons.Default.Security
         ),
         TooltipStep(
@@ -121,23 +117,24 @@ fun GettingStartedTooltipSequence(
             stepNumber = 3,
             title = stringResource(R.string.tooltip_step3_title),
             description = stringResource(R.string.tooltip_step3_desc),
-            actionLabel = if (isOverlayActive) stringResource(R.string.tooltip_step3_running) else stringResource(R.string.tooltip_step3_activate),
+            actionLabel = if (isOverlayActive) {
+                stringResource(R.string.tooltip_step3_running)
+            } else {
+                stringResource(R.string.tooltip_step3_activate)
+            },
             icon = Icons.Default.Layers
         )
     )
 
     Card(
         shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalPurpleLight.copy(alpha = 0.8f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
         modifier = modifier
             .fillMaxWidth()
             .testTag("getting_started_sequence_card")
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header: Icon + Title + Step Indicator + Expand/Close
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -149,15 +146,15 @@ fun GettingStartedTooltipSequence(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(MinimalPurpleLight),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Lightbulb,
                             contentDescription = null,
-                            tint = MinimalPurpleDark,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -165,14 +162,14 @@ fun GettingStartedTooltipSequence(
                     Column {
                         Text(
                             text = stringResource(R.string.getting_started_guide),
-                            color = MinimalPurpleDark,
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp
                         )
                         Text(
                             text = stringResource(R.string.guide_step_format, currentStep + 1, steps.size),
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp
                         )
                     }
@@ -181,26 +178,29 @@ fun GettingStartedTooltipSequence(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
                         onClick = { isExpanded = !isExpanded },
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(34.dp)
                     ) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isExpanded) "Collapse guide" else "Expand guide",
-                            tint = TextSecondary,
+                            contentDescription = if (isExpanded) {
+                                stringResource(R.string.cd_collapse_guide)
+                            } else {
+                                stringResource(R.string.cd_expand_guide)
+                            },
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
 
                     if (onDismissPermanently != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
                         IconButton(
                             onClick = onDismissPermanently,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Dismiss guide",
-                                tint = TextTertiary,
+                                contentDescription = stringResource(R.string.cd_dismiss_guide),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -215,16 +215,14 @@ fun GettingStartedTooltipSequence(
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(12.dp))
-
                     val step = steps[currentStep]
 
-                    // Step Content Card
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(MinimalSurfaceContainer)
-                            .border(1.dp, MinimalBorder, RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
                             .padding(14.dp)
                     ) {
                         Column {
@@ -232,13 +230,13 @@ fun GettingStartedTooltipSequence(
                                 Icon(
                                     imageVector = step.icon,
                                     contentDescription = null,
-                                    tint = MinimalPurple,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = step.title,
-                                    color = TextPrimary,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -248,14 +246,15 @@ fun GettingStartedTooltipSequence(
 
                             Text(
                                 text = step.description,
-                                color = TextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 lineHeight = 17.sp
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Interactive Step Action Button
+                            val isStepDone = (currentStep == 0 && isOverlayPermissionGranted) ||
+                                (currentStep == 2 && isOverlayActive)
                             Button(
                                 onClick = {
                                     when (currentStep) {
@@ -272,14 +271,12 @@ fun GettingStartedTooltipSequence(
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (currentStep == 0 && isOverlayPermissionGranted || (currentStep == 2 && isOverlayActive))
-                                        MinimalGreen
-                                    else
-                                        MinimalPurple,
-                                    contentColor = Color.White
+                                    containerColor = if (isStepDone) MinimalGreen else MaterialTheme.colorScheme.primary,
+                                    contentColor = if (isStepDone) Color.White else MaterialTheme.colorScheme.onPrimary
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .height(44.dp)
                                     .testTag("getting_started_action_btn")
                             ) {
                                 Text(
@@ -288,48 +285,86 @@ fun GettingStartedTooltipSequence(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
+
+                            if (currentStep == 0 && onOpenPermissionTutorial != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedButton(
+                                    onClick = onOpenPermissionTutorial,
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(40.dp)
+                                        .testTag("getting_started_perm_tutorial_btn")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Security,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(R.string.perm_tutorial_open_btn),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Step Dots Indicator & Navigation Controls
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Dots
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             steps.indices.forEach { index ->
                                 val isCurrent = index == currentStep
+                                val dotWidth by animateDpAsState(
+                                    targetValue = if (isCurrent) 20.dp else 8.dp,
+                                    animationSpec = tween(200),
+                                    label = "tooltip_dot_$index"
+                                )
                                 Box(
                                     modifier = Modifier
-                                        .size(if (isCurrent) 18.dp else 8.dp, 8.dp)
+                                        .width(dotWidth)
+                                        .height(8.dp)
                                         .clip(CircleShape)
-                                        .background(if (isCurrent) MinimalPurple else MinimalBorder)
+                                        .background(
+                                            if (isCurrent) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.outline
+                                        )
                                         .clickable { currentStep = index }
                                 )
                             }
                         }
 
-                        // Next / Back buttons
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (currentStep > 0) {
                                 OutlinedButton(
                                     onClick = { currentStep-- },
                                     shape = RoundedCornerShape(10.dp),
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(32.dp)
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(36.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.NavigateBefore,
-                                        contentDescription = "Previous step",
+                                        contentDescription = stringResource(R.string.cd_previous_step),
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Spacer(modifier = Modifier.width(2.dp))
-                                    Text(stringResource(R.string.btn_back), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(
+                                        stringResource(R.string.btn_back),
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
 
@@ -341,14 +376,14 @@ fun GettingStartedTooltipSequence(
                                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(32.dp)
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(36.dp)
                                 ) {
                                     Text(stringResource(R.string.btn_next), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.width(2.dp))
                                     Icon(
                                         imageVector = Icons.Default.NavigateNext,
-                                        contentDescription = "Next step",
+                                        contentDescription = stringResource(R.string.cd_next_step),
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -362,8 +397,8 @@ fun GettingStartedTooltipSequence(
                                         containerColor = MaterialTheme.colorScheme.primary,
                                         contentColor = MaterialTheme.colorScheme.onPrimary
                                     ),
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(32.dp)
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(36.dp)
                                 ) {
                                     Text(stringResource(R.string.btn_got_it), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
@@ -381,22 +416,22 @@ fun InteractiveTargetTutorialOverlay(
     onDismiss: () -> Unit
 ) {
     var tutorialStep by remember { mutableIntStateOf(0) }
-    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "pulse")
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.35f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(750, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        animationSpec = infiniteRepeatable(
+            animation = tween(750, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "pulseScale"
     )
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.8f,
         targetValue = 0.2f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(750, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        animationSpec = infiniteRepeatable(
+            animation = tween(750, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "pulseAlpha"
     )
@@ -413,48 +448,42 @@ fun InteractiveTargetTutorialOverlay(
 
     val currentPoint = tutorialPoints[tutorialStep]
 
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismiss
-    ) {
+    Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-            border = androidx.compose.foundation.BorderStroke(1.5.dp, MinimalPurple),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(8.dp)
                 .testTag("interactive_tutorial_overlay")
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Pulsing Target Tap Indicator Visual
                 Box(
                     modifier = Modifier.size(90.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Outer Pulsing Ring
                     Box(
                         modifier = Modifier
                             .size((64 * pulseScale).dp)
                             .clip(CircleShape)
-                            .background(MinimalPurple.copy(alpha = pulseAlpha))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha))
                     )
-
-                    // Inner Target Circle
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(MinimalPurple)
-                            .border(2.dp, Color.White, CircleShape),
+                            .background(MaterialTheme.colorScheme.primary)
+                            .border(2.dp, MaterialTheme.colorScheme.onPrimary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = currentPoint.third,
-                            contentDescription = "Tap Target Indicator",
-                            tint = Color.White,
+                            contentDescription = stringResource(R.string.cd_tap_target),
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -464,7 +493,7 @@ fun InteractiveTargetTutorialOverlay(
 
                 Text(
                     text = stringResource(R.string.tutorial_tap_to_adjust),
-                    color = MinimalPurpleDark,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -474,24 +503,21 @@ fun InteractiveTargetTutorialOverlay(
 
                 Text(
                     text = currentPoint.first,
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = currentPoint.second,
-                    color = TextSecondary,
-                    fontSize = 12.sp,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    lineHeight = 16.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Step Dots
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -502,7 +528,10 @@ fun InteractiveTargetTutorialOverlay(
                             modifier = Modifier
                                 .size(if (isSel) 20.dp else 8.dp, 8.dp)
                                 .clip(CircleShape)
-                                .background(if (isSel) MinimalPurple else MinimalBorder)
+                                .background(
+                                    if (isSel) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outline
+                                )
                         )
                     }
                 }
@@ -516,9 +545,16 @@ fun InteractiveTargetTutorialOverlay(
                     OutlinedButton(
                         onClick = onDismiss,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
                     ) {
-                        Text(text = stringResource(R.string.tutorial_skip), color = TextSecondary, fontSize = 11.sp)
+                        Text(
+                            text = stringResource(R.string.tutorial_skip),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp
+                        )
                     }
 
                     Button(
@@ -530,14 +566,20 @@ fun InteractiveTargetTutorialOverlay(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MinimalPurple,
-                            contentColor = Color.White
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
                     ) {
                         Text(
-                            text = if (tutorialStep < tutorialPoints.size - 1) stringResource(R.string.tutorial_next_touch) else stringResource(R.string.tutorial_finish),
+                            text = if (tutorialStep < tutorialPoints.size - 1) {
+                                stringResource(R.string.tutorial_next_touch)
+                            } else {
+                                stringResource(R.string.tutorial_finish)
+                            },
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )

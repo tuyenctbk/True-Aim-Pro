@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "UsageQuota": {
+      "title": "UsageQuota",
+      "description": "Per-user daily AI usage quota ledger synced between Firestore and local cache mirror.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID matching request.auth.uid."
+        },
+        "dateIso": {
+          "type": "string",
+          "description": "Current quota period date in YYYY-MM-DD format."
+        },
+        "architectUsed": {
+          "type": "integer",
+          "description": "Number of AI Crosshair Architect calls consumed today."
+        },
+        "visionUsed": {
+          "type": "integer",
+          "description": "Number of AI Map Screenshot Contrast Analyzer calls consumed today."
+        },
+        "coachUsed": {
+          "type": "integer",
+          "description": "Number of AI Aim Coach calls consumed today."
+        },
+        "bonusGraceCredits": {
+          "type": "integer",
+          "description": "Bonus daily grace credits granted (max 3 per day)."
+        },
+        "graceClaimed": {
+          "type": "boolean",
+          "description": "Whether the one-time daily +3 grace credit grant has been claimed today."
+        },
+        "ecoLiteMode": {
+          "type": "boolean",
+          "description": "User preference to route cloud requests to the high-efficiency Economy Lite model tier."
+        },
+        "fallbackCascadeCount": {
+          "type": "integer",
+          "description": "Number of times requests automatically cascaded to Economy Lite or local fallback today."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Document creation server timestamp written via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification server timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "dateIso",
+        "architectUsed",
+        "visionUsed",
+        "coachUsed",
+        "bonusGraceCredits",
+        "graceClaimed",
+        "ecoLiteMode",
+        "fallbackCascadeCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/usageQuota/{periodId}": {
+      "schema": {
+        "$ref": "#/entities/UsageQuota"
+      },
+      "description": "Per-user AI usage quota ledger documents (e.g., periodId = 'daily')."
+    }
+  }
+}

@@ -3,7 +3,14 @@ package com.example.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +18,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,35 +33,36 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.RotateRight
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
@@ -72,306 +81,308 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import com.example.R
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.model.CrosshairConfig
 import com.example.model.CrosshairStyle
 import com.example.ui.CrosshairViewModel
 import com.example.ui.PreviewBackground
+import com.example.ui.components.BatteryOptimizationDialog
+import com.example.ui.components.CrosshairColorPickerDialog
 import com.example.ui.components.CrosshairView
 import com.example.ui.components.GameBackgroundCanvas
 import com.example.ui.components.GettingStartedTooltipSequence
+import com.example.ui.components.InteractiveTargetTutorialOverlay
+import com.example.ui.components.RealTimeColorPickerPanel
+import com.example.ui.components.formatHexRgb
 import com.example.ui.theme.ArenaDarkCanvas
-import com.example.ui.theme.MinimalBorder
-import com.example.ui.theme.MinimalBorderSubtle
-import com.example.ui.theme.MinimalGreen
-import com.example.ui.theme.MinimalPurple
-import com.example.ui.theme.MinimalPurpleContainer
-import com.example.ui.theme.MinimalPurpleDark
-import com.example.ui.theme.MinimalPurpleLight
-import com.example.ui.theme.MinimalSurface
-import com.example.ui.theme.MinimalSurfaceCard
-import com.example.ui.theme.tvFocusable
-
-import com.example.ui.theme.MinimalSurfaceContainer
-import com.example.ui.theme.MinimalSurfaceHigh
+import com.example.ui.theme.LaserCrimson
+import com.example.ui.theme.MonoFontFamily
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.PolarWhite
 import com.example.ui.theme.ReticleColors
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusable
+import java.util.Locale
+import kotlin.math.abs
 
 @Composable
 fun StudioScreen(
     viewModel: CrosshairViewModel,
     onNavigateToTrainer: () -> Unit,
+    onNavigateToGallery: () -> Unit,
+    onNavigateToDesigns: () -> Unit,
+    onToggleOverlay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val config by viewModel.activeConfig.collectAsState()
     val isOverlayActive by viewModel.isOverlayActive.collectAsState()
     val background by viewModel.selectedBackground.collectAsState()
-    val showGettingStarted by viewModel.showGettingStartedSequence.collectAsState()
-    val isPermissionGranted by viewModel.isOverlayPermissionGranted.collectAsState()
+    val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted.collectAsState()
+    val recentColors by viewModel.recentCustomColors.collectAsState()
+
+    val context = LocalContext.current
+    var showBatteryGuide by remember { mutableStateOf(false) }
+    var showGettingStartedGuide by remember { mutableStateOf(!isOverlayPermissionGranted) }
+    var showInteractiveTutorial by remember { mutableStateOf(false) }
+    var showColorPickerDialog by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
-    var showInteractiveTutorial by remember { mutableStateOf(false) }
-    var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
-
-    if (showInteractiveTutorial) {
-        com.example.ui.components.InteractiveTargetTutorialOverlay(
-            onDismiss = { showInteractiveTutorial = false }
-        )
-    }
-
-    if (showBatteryOptimizationDialog) {
-        com.example.ui.components.BatteryOptimizationDialog(
-            onDismiss = { showBatteryOptimizationDialog = false }
-        )
-    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(scrollState)
-                .padding(bottom = 120.dp)
+                .padding(bottom = 96.dp)
+                .testTag("studio_screen")
         ) {
-            // Non-Intrusive Getting Started Overlay Tooltip Sequence
-            if (showGettingStarted) {
-                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            if (showGettingStartedGuide) {
+                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     GettingStartedTooltipSequence(
-                        isOverlayPermissionGranted = isPermissionGranted,
+                        isOverlayPermissionGranted = isOverlayPermissionGranted,
                         isOverlayActive = isOverlayActive,
                         onOpenPermissionSettings = {
-                            try {
-                                val intent = Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    Uri.parse("package:${context.packageName}")
-                                )
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                                context.startActivity(intent)
-                            }
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            context.startActivity(intent)
                         },
-                        onToggleOverlay = { viewModel.toggleOverlay() },
-                        onNavigateToGallery = { /* Can switch to gallery */ },
-                        onDismissPermanently = { viewModel.dismissGettingStarted() }
+                        onToggleOverlay = onToggleOverlay,
+                        onNavigateToGallery = onNavigateToGallery,
+                        onOpenPermissionTutorial = { viewModel.openPermissionTutorialDialog() },
+                        onDismissPermanently = { showGettingStartedGuide = false }
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // Hero Master Switch Banner
             MasterOverlayCard(
                 isOverlayActive = isOverlayActive,
-                onToggle = { viewModel.toggleOverlay() },
-                onCalibrate = { viewModel.toggleCalibrateHud() },
-                onOpenBatteryDialog = { showBatteryOptimizationDialog = true }
+                onToggle = onToggleOverlay,
+                onCalibrate = { viewModel.toggleCalibrateHud() }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Interactive Live Game Preview Stage
             GamePreviewStage(
                 config = config,
                 currentBg = background,
                 onSelectBg = { viewModel.setBackground(it) },
+                onSizeChange = { newSize -> viewModel.setReticleSizeDp(newSize) },
+                onOpacityChange = { newOpacity -> viewModel.setReticleOpacity(newOpacity) },
+                onRotationChange = { newRotation -> viewModel.setReticleRotationDeg(newRotation) },
+                onResetCrosshairSettings = {
+                    viewModel.resetSelectedCrosshairSettings()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.crosshair_settings_reset_toast),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
                 onSavePreset = { viewModel.openSaveDialog() },
-                onTestRange = onNavigateToTrainer
+                onShowTutorial = { showInteractiveTutorial = true },
+                onTestRange = onNavigateToTrainer,
+                onOpenColorPicker = { showColorPickerDialog = true }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Quick Preset Save Action Card
-            QuickPresetSaveBanner(
-                currentConfig = config,
-                onSavePreset = { viewModel.openSaveDialog() }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Reticle Style Picker
             ReticleStyleSelector(
                 currentStyle = config.style,
-                onStyleSelected = { newStyle ->
-                    viewModel.updateConfig {
-                        it.copy(
-                            style = newStyle,
-                            tStyle = (newStyle == CrosshairStyle.T_SHAPE)
-                        )
-                    }
-                }
+                onStyleSelected = { style ->
+                    viewModel.updateConfig("style") { it.copy(style = style) }
+                },
+                onBrowseDesigns = onNavigateToDesigns
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Real-Time Color Studio & Hex Picker
             RealTimeColorStudioSection(
                 config = config,
-                onColorHexSelected = { colorHex ->
-                    viewModel.updateConfig { it.copy(primaryColorHex = colorHex) }
-                },
-                onHexTextEntered = { hexStr ->
-                    viewModel.setHexColor(hexStr)
-                },
-                onRgbChanged = { r, g, b ->
-                    viewModel.setRgbColor(r, g, b)
-                },
-                onOutlineToggled = { enabled ->
-                    viewModel.updateConfig { it.copy(outlineEnabled = enabled) }
-                },
-                onCenterDotToggled = { dot ->
-                    viewModel.updateConfig { it.copy(centerDot = dot) }
-                },
-                onTShapeToggled = { t ->
-                    viewModel.updateConfig { it.copy(tStyle = t) }
-                }
+                recentColors = recentColors,
+                onColorHexSelected = { hex -> viewModel.setPrimaryColorHex(hex) },
+                onColorCommitted = { hex -> viewModel.recordRecentColor(hex) },
+                onHexTextEntered = { hexText -> viewModel.parseAndApplyHexString(hexText) },
+                onRgbChanged = { r, g, b -> viewModel.setPrimaryColorRgb(r, g, b) },
+                onOutlineToggled = { enabled -> viewModel.updateConfig("outline") { it.copy(outlineEnabled = enabled) } },
+                onCenterDotToggled = { enabled -> viewModel.updateConfig("dot") { it.copy(centerDot = enabled) } },
+                onTShapeToggled = { enabled -> viewModel.updateConfig("t_style") { it.copy(tStyle = enabled) } }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Dedicated Alpha Transparency (Opacity) Component
             AlphaTransparencySection(
                 opacity = config.opacity,
-                onOpacityChange = { newOpacity ->
-                    viewModel.setAlphaOpacity(newOpacity)
-                }
+                onOpacityChange = { v -> viewModel.setReticleOpacity(v) }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Reticle Geometry Dimensions (Size, Thickness, Gap, Rotation)
             GeometrySlidersSection(
                 config = config,
-                onUpdate = { viewModel.updateConfig(it) }
+                onUpdate = { transform -> viewModel.updateConfig("geometry", transform) }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Pixel-Perfect Center Offset / D-Pad Nudge
             CenterAlignmentSection(
                 config = config,
                 onNudge = { dx, dy -> viewModel.nudgeOffset(dx, dy) },
                 onReset = { viewModel.resetOffset() }
             )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // Save Custom Preset Quick Card
+            Card(
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .testTag("quick_save_preset_card")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.BookmarkAdd,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.save_as_game_preset_title),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(R.string.save_as_game_preset_desc),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(
+                        onClick = { viewModel.openSaveDialog() },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .height(44.dp)
+                            .testTag("studio_save_preset_btn")
+                    ) {
+                        Text(text = stringResource(R.string.save_btn), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
         }
 
-        // Floating Action Button to toggle crosshair overlay on top of other applications using SYSTEM_ALERT_WINDOW
-        androidx.compose.material3.FloatingActionButton(
-            onClick = {
-                val hasPermission = Settings.canDrawOverlays(context)
-                if (!hasPermission) {
-                    try {
-                        val intent = Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:${context.packageName}")
-                        )
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                        context.startActivity(intent)
-                    }
-                } else {
-                    viewModel.toggleOverlay()
-                }
-            },
-            containerColor = if (isOverlayActive) MinimalPurple else MinimalPurpleContainer,
-            contentColor = if (isOverlayActive) Color.White else MinimalPurpleDark,
-            shape = CircleShape,
+        // Quick Floating Action Buttons (Battery Info + Overlay Power)
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 90.dp, end = 20.dp)
-                .testTag("overlay_toggle_fab")
+                .padding(end = 16.dp, bottom = 16.dp),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Icon(
-                imageVector = if (isOverlayActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                contentDescription = "Toggle Crosshair Overlay",
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun QuickPresetSaveBanner(
-    currentConfig: CrosshairConfig,
-    onSavePreset: () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .testTag("quick_preset_save_card")
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
-            ) {
-                Box(
+            if (isOverlayActive) {
+                FloatingActionButton(
+                    onClick = { showBatteryGuide = true },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape,
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(MinimalPurpleLight),
-                    contentAlignment = Alignment.Center
+                        .size(48.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        .testTag("fab_battery_guide")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Bookmark,
-                        contentDescription = null,
-                        tint = MinimalPurpleDark,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = stringResource(R.string.save_as_game_preset_title),
-                        color = TextPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.save_as_game_preset_desc),
-                        color = TextSecondary,
-                        fontSize = 11.sp
+                        imageVector = Icons.Default.BatteryChargingFull,
+                        contentDescription = stringResource(R.string.cd_battery_info),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            Button(
-                onClick = onSavePreset,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MinimalPurple,
-                    contentColor = Color.White
-                ),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                modifier = Modifier.height(36.dp)
+            val fabBg by animateColorAsState(
+                targetValue = if (isOverlayActive) LaserCrimson else MaterialTheme.colorScheme.primary,
+                animationSpec = tween(250),
+                label = "fab_bg"
+            )
+
+            FloatingActionButton(
+                onClick = onToggleOverlay,
+                containerColor = fabBg,
+                contentColor = if (isOverlayActive) Color.White else MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape,
+                modifier = Modifier
+                    .size(56.dp)
+                    .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
+                    .testTag("fab_toggle_overlay")
             ) {
-                Text(text = stringResource(R.string.save_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Icon(
+                    imageVector = if (isOverlayActive) Icons.Default.PowerSettingsNew else Icons.Default.Layers,
+                    contentDescription = stringResource(R.string.cd_toggle_overlay),
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
+    }
+
+    if (showBatteryGuide) {
+        BatteryOptimizationDialog(onDismiss = { showBatteryGuide = false })
+    }
+
+    if (showInteractiveTutorial) {
+        InteractiveTargetTutorialOverlay(onDismiss = { showInteractiveTutorial = false })
+    }
+
+    if (showColorPickerDialog) {
+        CrosshairColorPickerDialog(
+            config = config,
+            recentColors = recentColors,
+            onColorChanged = { hex -> viewModel.setPrimaryColorHex(hex) },
+            onColorCommitted = { hex -> viewModel.recordRecentColor(hex) },
+            onDismiss = { showColorPickerDialog = false }
+        )
     }
 }
 
@@ -379,26 +390,21 @@ fun QuickPresetSaveBanner(
 fun MasterOverlayCard(
     isOverlayActive: Boolean,
     onToggle: () -> Unit,
-    onCalibrate: () -> Unit,
-    onOpenBatteryDialog: () -> Unit = {}
+    onCalibrate: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isOverlayActive) MinimalPurpleContainer else MinimalSurface
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isOverlayActive) MinimalPurple else MinimalBorder
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            width = if (isOverlayActive) 1.5.dp else 1.dp,
+            color = if (isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("master_overlay_card")
     ) {
-        Column(
-            modifier = Modifier.padding(18.dp)
-        ) {
+        Column(modifier = Modifier.padding(18.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -408,41 +414,30 @@ fun MasterOverlayCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(8.dp)
+                                .size(9.dp)
                                 .clip(CircleShape)
-                                .background(if (isOverlayActive) MinimalGreen else TextTertiary)
+                                .background(
+                                    if (isOverlayActive) NeonGreen
+                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                                )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isOverlayActive) stringResource(R.string.overlay_active_label) else stringResource(R.string.overlay_off_label),
-                            color = if (isOverlayActive) MinimalPurpleDark else TextSecondary,
+                            text = if (isOverlayActive) stringResource(R.string.overlay_active_label)
+                            else stringResource(R.string.overlay_off_label),
+                            color = if (isOverlayActive) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            letterSpacing = 1.sp
+                            letterSpacing = 0.8.sp
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        IconButton(
-                            onClick = onOpenBatteryDialog,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .testTag("battery_optimization_info_icon")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Battery Optimization Info",
-                                tint = MinimalPurple,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (isOverlayActive)
-                            stringResource(R.string.overlay_active_desc)
-                        else
-                            stringResource(R.string.overlay_off_desc),
-                        color = TextSecondary,
-                        fontSize = 12.sp
+                        text = if (isOverlayActive) stringResource(R.string.overlay_active_desc)
+                        else stringResource(R.string.overlay_off_desc),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
 
@@ -450,10 +445,10 @@ fun MasterOverlayCard(
                     checked = isOverlayActive,
                     onCheckedChange = { onToggle() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = MinimalPurple,
-                        checkedTrackColor = MinimalPurpleLight,
-                        uncheckedThumbColor = TextTertiary,
-                        uncheckedTrackColor = MinimalSurfaceContainer
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     modifier = Modifier.testTag("overlay_toggle_switch")
                 )
@@ -466,7 +461,7 @@ fun MasterOverlayCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(MinimalBorder)
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
@@ -478,13 +473,13 @@ fun MasterOverlayCard(
                             Icon(
                                 imageVector = Icons.Default.CenterFocusStrong,
                                 contentDescription = null,
-                                tint = MinimalPurple,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.floating_calibration_hud),
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -494,15 +489,19 @@ fun MasterOverlayCard(
                             onClick = onCalibrate,
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MinimalPurple,
-                                contentColor = Color.White
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                             modifier = Modifier
-                                .height(34.dp)
+                                .height(38.dp)
                                 .testTag("toggle_calibration_hud_btn")
                         ) {
-                            Text(text = stringResource(R.string.hud_tool_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = stringResource(R.string.hud_tool_btn),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -516,79 +515,120 @@ fun GamePreviewStage(
     config: CrosshairConfig,
     currentBg: PreviewBackground,
     onSelectBg: (PreviewBackground) -> Unit,
+    onSizeChange: (Float) -> Unit,
+    onOpacityChange: (Float) -> Unit,
+    onRotationChange: (Float) -> Unit,
+    onResetCrosshairSettings: () -> Unit,
     onSavePreset: () -> Unit,
-    onTestRange: () -> Unit
+    onShowTutorial: () -> Unit,
+    onTestRange: () -> Unit,
+    onOpenColorPicker: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .testTag("live_preview_card")
     ) {
         Column {
-            // Header Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = MinimalPurple,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.live_reticle_preview_title),
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp
+                        letterSpacing = 0.8.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Live Parameters Summary Pill
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(MinimalPurpleLight)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "${config.style.displayName} • ${(config.opacity * 100).toInt()}% • ${config.sizeDp.toInt()}dp",
-                            color = MinimalPurpleDark,
+                            text = stringResource(
+                                R.string.studio_preview_spec_badge,
+                                (config.opacity * 100).toInt(),
+                                config.sizeDp.toInt()
+                            ),
+                            fontFamily = MonoFontFamily,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    IconButton(
+                        onClick = onResetCrosshairSettings,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
+                            .testTag("studio_reset_crosshair_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.RestartAlt,
+                            contentDescription = stringResource(R.string.cd_reset_crosshair_settings),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(19.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onShowTutorial,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("studio_help_tutorial_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            contentDescription = stringResource(R.string.getting_started_guide),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(19.dp)
+                        )
+                    }
 
                     IconButton(
                         onClick = onSavePreset,
                         modifier = Modifier
-                            .size(32.dp)
-                            .tvFocusable(CircleShape, MinimalPurple)
+                            .size(36.dp)
+                            .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
+                            .testTag("preview_save_preset_btn")
                     ) {
                         Icon(
                             imageVector = Icons.Default.BookmarkBorder,
-                            contentDescription = "Save Preset",
-                            tint = MinimalPurple,
+                            contentDescription = stringResource(R.string.cd_save_preset),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
 
-            // Canvas Stage (Square Arena)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -596,54 +636,101 @@ fun GamePreviewStage(
                     .aspectRatio(1.25f)
                     .clip(RoundedCornerShape(18.dp))
                     .background(ArenaDarkCanvas)
-                    .border(1.dp, MinimalBorder, RoundedCornerShape(18.dp)),
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(18.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                // Background Terrain
                 GameBackgroundCanvas(background = currentBg)
 
-                // Reticle Rendering
+                val animatedSizeDp by animateFloatAsState(
+                    targetValue = config.sizeDp,
+                    animationSpec = spring(stiffness = Spring.StiffnessMedium),
+                    label = "preview_size"
+                )
+                val animatedGapDp by animateFloatAsState(
+                    targetValue = config.gapDp,
+                    animationSpec = spring(stiffness = Spring.StiffnessMedium),
+                    label = "preview_gap"
+                )
+
                 CrosshairView(
-                    config = config,
+                    config = config.copy(sizeDp = animatedSizeDp, gapDp = animatedGapDp),
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                // Background Badge
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(12.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Black.copy(alpha = 0.55f))
+                        .background(Color.Black.copy(alpha = 0.6f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = currentBg.displayName.uppercase(),
-                        color = Color.White.copy(alpha = 0.9f),
+                        text = stringResource(currentBg.nameRes).uppercase(),
+                        fontFamily = MonoFontFamily,
+                        color = Color.White.copy(alpha = 0.92f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
-                        letterSpacing = 1.sp
+                        letterSpacing = 0.8.sp
                     )
                 }
 
-                // Aim Range Button Overlay in corner
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Black.copy(alpha = 0.72f))
+                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(12.dp))
+                        .clickable { onOpenColorPicker() }
+                        .tvFocusable(RoundedCornerShape(12.dp), MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = 10.dp, vertical = 7.dp)
+                        .testTag("preview_quick_color_picker_btn")
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(13.dp)
+                                .clip(CircleShape)
+                                .background(Color(config.primaryColorHex))
+                                .border(1.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = formatHexRgb(config.primaryColorHex),
+                            fontFamily = MonoFontFamily,
+                            color = Color.White,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = stringResource(R.string.cd_pick_color),
+                            tint = Color.White.copy(alpha = 0.85f),
+                            modifier = Modifier.size(13.dp)
+                        )
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(12.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Black.copy(alpha = 0.65f))
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                        .background(Color.Black.copy(alpha = 0.72f))
+                        .border(1.dp, NeonGreen.copy(alpha = 0.55f), RoundedCornerShape(12.dp))
                         .clickable { onTestRange() }
                         .tvFocusable(RoundedCornerShape(12.dp), NeonGreen)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                        .testTag("preview_open_trainer_btn")
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Test reflex range",
+                            contentDescription = stringResource(R.string.cd_aim_trainer),
                             tint = NeonGreen,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -656,7 +743,6 @@ fun GamePreviewStage(
                 }
             }
 
-            // Background Switcher Strip
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier
@@ -665,24 +751,28 @@ fun GamePreviewStage(
                     .padding(horizontal = 14.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                PreviewBackground.values().forEach { bg ->
+                PreviewBackground.entries.forEach { bg ->
                     val isSelected = bg == currentBg
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) MinimalPurple else MinimalSurfaceContainer)
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceContainer
+                            )
                             .border(
                                 1.dp,
-                                if (isSelected) MinimalPurple else MinimalBorder,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                                 RoundedCornerShape(20.dp)
                             )
                             .clickable { onSelectBg(bg) }
-                            .tvFocusable(RoundedCornerShape(20.dp), MinimalPurple)
-                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                            .tvFocusable(RoundedCornerShape(20.dp), MaterialTheme.colorScheme.primary)
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
                     ) {
                         Text(
-                            text = bg.displayName,
-                            color = if (isSelected) Color.White else TextSecondary,
+                            text = stringResource(bg.nameRes),
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
@@ -690,6 +780,462 @@ fun GamePreviewStage(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
+
+            LiveOverlayScaleBar(
+                sizeDp = config.sizeDp,
+                onSizeChange = onSizeChange,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+            )
+
+            LiveOverlayOpacityBar(
+                opacity = config.opacity,
+                onOpacityChange = onOpacityChange,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+            )
+
+            LiveOverlayRotationBar(
+                rotationDeg = config.rotationDeg,
+                onRotationChange = onRotationChange,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+}
+
+@Composable
+private fun LiveOverlayScaleBar(
+    sizeDp: Float,
+    onSizeChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scaleMultiplier = (sizeDp / 36f).coerceIn(0.3f, 2.6f)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .testTag("overlay_scale_card")
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.ZoomOutMap,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = stringResource(R.string.overlay_scale_label),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .testTag("overlay_scale_badge")
+            ) {
+                Text(
+                    text = stringResource(
+                        R.string.overlay_scale_badge_format,
+                        scaleMultiplier,
+                        sizeDp.toInt()
+                    ),
+                    fontFamily = MonoFontFamily,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(
+                onClick = { onSizeChange((sizeDp - 2f).coerceIn(14f, 90f)) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_scale_decrease_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = stringResource(R.string.cd_decrease_scale),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Slider(
+                value = sizeDp.coerceIn(14f, 90f),
+                onValueChange = { onSizeChange(it) },
+                valueRange = 14f..90f,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("overlay_scale_slider")
+            )
+
+            IconButton(
+                onClick = { onSizeChange((sizeDp + 2f).coerceIn(14f, 90f)) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_scale_increase_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.cd_increase_scale),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf(0.5f to 18f, 1.0f to 36f, 1.5f to 54f, 2.0f to 72f).forEach { (factor, targetDp) ->
+                val isSelected = abs(sizeDp - targetDp) <= 2.5f
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .border(
+                            1.dp,
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .clickable { onSizeChange(targetDp) }
+                        .padding(vertical = 6.dp)
+                        .testTag("scale_preset_${targetDp.toInt()}"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.scale_preset_format, factor),
+                        fontFamily = MonoFontFamily,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LiveOverlayOpacityBar(
+    opacity: Float,
+    onOpacityChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val clampedOpacity = opacity.coerceIn(0.10f, 1.00f)
+    val opacityPercent = (clampedOpacity * 100).toInt()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .testTag("overlay_opacity_card")
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Opacity,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = stringResource(R.string.overlay_opacity_label),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .testTag("overlay_opacity_badge")
+            ) {
+                Text(
+                    text = stringResource(R.string.percent_format, opacityPercent),
+                    fontFamily = MonoFontFamily,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(
+                onClick = { onOpacityChange((clampedOpacity - 0.05f).coerceIn(0.10f, 1.00f)) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_opacity_decrease_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = stringResource(R.string.cd_decrease_opacity),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Slider(
+                value = clampedOpacity,
+                onValueChange = { onOpacityChange(it.coerceIn(0.10f, 1.00f)) },
+                valueRange = 0.10f..1.00f,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("overlay_opacity_slider")
+            )
+
+            IconButton(
+                onClick = { onOpacityChange((clampedOpacity + 0.05f).coerceIn(0.10f, 1.00f)) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_opacity_increase_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.cd_increase_opacity),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf(0.25f to 25, 0.50f to 50, 0.75f to 75, 1.00f to 100).forEach { (targetOpacity, pct) ->
+                val isSelected = abs(clampedOpacity - targetOpacity) < 0.05f
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .border(
+                            1.dp,
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .clickable { onOpacityChange(targetOpacity) }
+                        .padding(vertical = 6.dp)
+                        .testTag("opacity_preset_$pct"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.percent_format, pct),
+                        fontFamily = MonoFontFamily,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LiveOverlayRotationBar(
+    rotationDeg: Float,
+    onRotationChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val clampedRotation = ((rotationDeg % 360f) + 360f) % 360f
+    val rotationInt = clampedRotation.toInt()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .testTag("overlay_rotation_card")
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.RotateRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = stringResource(R.string.overlay_rotation_label),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .testTag("overlay_rotation_badge")
+            ) {
+                Text(
+                    text = stringResource(R.string.unit_deg_int, rotationInt),
+                    fontFamily = MonoFontFamily,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(
+                onClick = { onRotationChange(((clampedRotation - 5f) + 360f) % 360f) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_rotation_decrease_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = stringResource(R.string.cd_decrease_rotation),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Slider(
+                value = clampedRotation,
+                onValueChange = { onRotationChange(it.coerceIn(0f, 360f)) },
+                valueRange = 0f..360f,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("overlay_rotation_slider")
+            )
+
+            IconButton(
+                onClick = { onRotationChange((clampedRotation + 5f) % 360f) },
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("overlay_rotation_increase_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.cd_increase_rotation),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            listOf(0f, 45f, 90f, 135f, 180f, 270f).forEach { deg ->
+                val isSelected = abs(clampedRotation - deg) < 2f
+                val degInt = deg.toInt()
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .border(
+                            1.dp,
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .clickable { onRotationChange(deg) }
+                        .padding(vertical = 6.dp)
+                        .testTag("rotation_preset_$degInt"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.unit_deg_int, degInt),
+                        fontFamily = MonoFontFamily,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 10.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }
@@ -697,20 +1243,53 @@ fun GamePreviewStage(
 @Composable
 fun ReticleStyleSelector(
     currentStyle: CrosshairStyle,
-    onStyleSelected: (CrosshairStyle) -> Unit
+    onStyleSelected: (CrosshairStyle) -> Unit,
+    onBrowseDesigns: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.reticle_shape_title),
-            color = TextSecondary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.reticle_shape_title),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
+                letterSpacing = 0.8.sp,
+                modifier = Modifier.weight(1f)
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                    .clickable { onBrowseDesigns() }
+                    .tvFocusable(RoundedCornerShape(12.dp), MaterialTheme.colorScheme.primary)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .testTag("studio_open_designs_btn")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Layers,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = stringResource(R.string.studio_browse_designs_btn),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
         Row(
@@ -719,7 +1298,7 @@ fun ReticleStyleSelector(
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            CrosshairStyle.values().forEach { style ->
+            CrosshairStyle.entries.forEach { style ->
                 val isSelected = style == currentStyle
                 val previewConfig = CrosshairConfig(
                     style = style,
@@ -728,23 +1307,24 @@ fun ReticleStyleSelector(
                     gapDp = 5f,
                     centerDot = true,
                     centerDotSizeDp = 3f,
-                    primaryColorHex = if (isSelected) 0xFF6750A4 else 0xFF10B981,
+                    primaryColorHex = if (isSelected) 0xFF00E676 else 0xFF00E5FF,
                     outlineEnabled = true
                 )
 
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) MinimalPurpleContainer else MinimalSurface
+                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surface
                     ),
-                    border = androidx.compose.foundation.BorderStroke(
+                    border = BorderStroke(
                         if (isSelected) 1.5.dp else 1.dp,
-                        if (isSelected) MinimalPurple else MinimalBorder
+                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                     ),
                     modifier = Modifier
                         .width(96.dp)
                         .clickable { onStyleSelected(style) }
-                        .tvFocusable(RoundedCornerShape(16.dp), MinimalPurple)
+                        .tvFocusable(RoundedCornerShape(16.dp), MaterialTheme.colorScheme.primary)
                         .testTag("reticle_style_${style.name}")
                 ) {
                     Column(
@@ -765,12 +1345,14 @@ fun ReticleStyleSelector(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = style.displayName,
-                            color = if (isSelected) MinimalPurpleDark else TextPrimary,
+                            text = stringResource(style.nameRes),
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurface,
                             fontSize = 10.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             textAlign = TextAlign.Center,
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -782,27 +1364,30 @@ fun ReticleStyleSelector(
 @Composable
 fun RealTimeColorStudioSection(
     config: CrosshairConfig,
+    recentColors: List<Long>,
     onColorHexSelected: (Long) -> Unit,
+    onColorCommitted: (Long) -> Unit,
     onHexTextEntered: (String) -> Boolean,
     onRgbChanged: (Int, Int, Int) -> Unit,
     onOutlineToggled: (Boolean) -> Unit,
     onCenterDotToggled: (Boolean) -> Unit,
     onTShapeToggled: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val currentColor = Color(config.primaryColorHex)
     val redVal = (config.primaryColorHex shr 16 and 0xFF).toInt()
     val greenVal = (config.primaryColorHex shr 8 and 0xFF).toInt()
     val blueVal = (config.primaryColorHex and 0xFF).toInt()
 
-    val hexDisplay = String.format("#%02X%02X%02X", redVal, greenVal, blueVal)
+    val hexDisplay = String.format(Locale.US, "#%02X%02X%02X", redVal, greenVal, blueVal)
     var hexInput by remember(config.primaryColorHex) { mutableStateOf(hexDisplay) }
     var isHexValid by remember { mutableStateOf(true) }
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -818,58 +1403,71 @@ fun RealTimeColorStudioSection(
                     Icon(
                         imageVector = Icons.Default.Palette,
                         contentDescription = null,
-                        tint = MinimalPurple,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.color_picker_title),
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp
                     )
                 }
 
-                // Live Color Swatch & Hex Badge
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(MinimalSurfaceContainer)
-                        .border(1.dp, MinimalBorder, RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
                         .clickable {
                             clipboardManager.setText(AnnotatedString(hexDisplay))
+                            Toast.makeText(context, context.getString(R.string.code_copied_toast), Toast.LENGTH_SHORT).show()
                         }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .size(14.dp)
                             .clip(CircleShape)
                             .background(currentColor)
-                            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+                            .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = hexDisplay,
-                        color = TextPrimary,
+                        fontFamily = MonoFontFamily,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Pro Esports Swatches
+            Text(
+                text = stringResource(R.string.color_spectrum_title),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            RealTimeColorPickerPanel(
+                config = config,
+                recentColors = recentColors,
+                onColorChanged = onColorHexSelected,
+                onColorCommitted = onColorCommitted
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             Text(
                 text = stringResource(R.string.esports_palette_title),
-                color = TextSecondary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -885,24 +1483,27 @@ fun RealTimeColorStudioSection(
 
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(color)
                             .border(
                                 if (isSelected) 3.dp else 1.dp,
-                                if (isSelected) MinimalPurple else MinimalBorder,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                                 CircleShape
                             )
-                            .clickable { onColorHexSelected(colorHex) }
-                            .testTag("color_swatch_${colorHex}"),
+                            .clickable {
+                                onColorHexSelected(colorHex)
+                                onColorCommitted(colorHex)
+                            }
+                            .testTag("color_swatch_$colorHex"),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isSelected) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                tint = if (color == PolarWhite) Color.Black else Color.White,
-                                modifier = Modifier.size(16.dp)
+                                tint = if (color == PolarWhite || color == Color(0xFFFFEA00)) Color.Black else Color.White,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
@@ -911,13 +1512,10 @@ fun RealTimeColorStudioSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Real-Time Custom Hex Input Tool
             Text(
                 text = stringResource(R.string.real_time_hex_title),
-                color = TextSecondary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -934,37 +1532,44 @@ fun RealTimeColorStudioSection(
                         isHexValid = success || input.length < 6
                     },
                     isError = !isHexValid,
-                    placeholder = { Text("#00E676", fontSize = 12.sp, color = TextTertiary) },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.hex_placeholder),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MinimalPurple,
-                        unfocusedBorderColor = MinimalBorder,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        focusedContainerColor = MinimalSurfaceContainer,
-                        unfocusedContainerColor = MinimalSurfaceContainer
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .height(50.dp)
+                        .height(52.dp)
                         .testTag("hex_color_input_field")
                 )
 
                 IconButton(
                     onClick = {
                         clipboardManager.setText(AnnotatedString(hexDisplay))
+                        Toast.makeText(context, context.getString(R.string.code_copied_toast), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(50.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(MinimalSurfaceContainer)
-                        .border(1.dp, MinimalBorder, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy Hex Code",
-                        tint = MinimalPurple,
+                        contentDescription = stringResource(R.string.cd_copy_hex),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -972,147 +1577,97 @@ fun RealTimeColorStudioSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Live RGB Fine-Tuning Sliders
             Text(
                 text = stringResource(R.string.rgb_mixer_title),
-                color = TextSecondary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Red Slider
             RgbSliderRow(
-                channelLabel = "R",
-                channelName = "Red",
+                channelLabel = stringResource(R.string.rgb_channel_r),
                 colorValue = redVal,
                 trackColor = Color(0xFFFF5252),
-                onValueChange = { newRed ->
-                    onRgbChanged(newRed, greenVal, blueVal)
-                }
+                onValueChange = { onRgbChanged(it, greenVal, blueVal) }
             )
-
-            // Green Slider
             RgbSliderRow(
-                channelLabel = "G",
-                channelName = "Green",
+                channelLabel = stringResource(R.string.rgb_channel_g),
                 colorValue = greenVal,
                 trackColor = Color(0xFF00E676),
-                onValueChange = { newGreen ->
-                    onRgbChanged(redVal, newGreen, blueVal)
-                }
+                onValueChange = { onRgbChanged(redVal, it, blueVal) }
             )
-
-            // Blue Slider
             RgbSliderRow(
-                channelLabel = "B",
-                channelName = "Blue",
+                channelLabel = stringResource(R.string.rgb_channel_b),
                 colorValue = blueVal,
                 trackColor = Color(0xFF40C4FF),
-                onValueChange = { newBlue ->
-                    onRgbChanged(redVal, greenVal, newBlue)
-                }
+                onValueChange = { onRgbChanged(redVal, greenVal, it) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Toggles Row (Outline, Dot, T-Style)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.high_contrast_outline),
-                        color = TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = stringResource(R.string.outline_desc),
-                        color = TextSecondary,
-                        fontSize = 11.sp
-                    )
-                }
-                Switch(
-                    checked = config.outlineEnabled,
-                    onCheckedChange = onOutlineToggled,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MinimalPurple,
-                        checkedTrackColor = MinimalPurpleLight
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.center_precision_dot),
-                        color = TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = stringResource(R.string.center_dot_desc),
-                        color = TextSecondary,
-                        fontSize = 11.sp
-                    )
-                }
-                Switch(
-                    checked = config.centerDot,
-                    onCheckedChange = onCenterDotToggled,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MinimalPurple,
-                        checkedTrackColor = MinimalPurpleLight
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.t_style_reticle),
-                        color = TextPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = stringResource(R.string.t_style_desc),
-                        color = TextSecondary,
-                        fontSize = 11.sp
-                    )
-                }
-                Switch(
-                    checked = config.tStyle,
-                    onCheckedChange = onTShapeToggled,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MinimalPurple,
-                        checkedTrackColor = MinimalPurpleLight
-                    )
-                )
-            }
+            StudioToggleRow(
+                title = stringResource(R.string.high_contrast_outline),
+                description = stringResource(R.string.outline_desc),
+                checked = config.outlineEnabled,
+                onCheckedChange = onOutlineToggled
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            StudioToggleRow(
+                title = stringResource(R.string.center_precision_dot),
+                description = stringResource(R.string.center_dot_desc),
+                checked = config.centerDot,
+                onCheckedChange = onCenterDotToggled
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            StudioToggleRow(
+                title = stringResource(R.string.t_style_reticle),
+                description = stringResource(R.string.t_style_desc),
+                checked = config.tStyle,
+                onCheckedChange = onTShapeToggled
+            )
         }
+    }
+}
+
+@Composable
+private fun StudioToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+            Text(
+                text = title,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = description,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 11.sp
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary
+            )
+        )
     }
 }
 
 @Composable
 fun RgbSliderRow(
     channelLabel: String,
-    channelName: String,
     colorValue: Int,
     trackColor: Color,
     onValueChange: (Int) -> Unit
@@ -1125,13 +1680,14 @@ fun RgbSliderRow(
     ) {
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(26.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .background(trackColor.copy(alpha = 0.2f)),
+                .background(trackColor.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = channelLabel,
+                fontFamily = MonoFontFamily,
                 color = trackColor,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -1147,7 +1703,7 @@ fun RgbSliderRow(
             colors = SliderDefaults.colors(
                 thumbColor = trackColor,
                 activeTrackColor = trackColor,
-                inactiveTrackColor = MinimalBorder
+                inactiveTrackColor = MaterialTheme.colorScheme.outline
             ),
             modifier = Modifier.weight(1f)
         )
@@ -1156,11 +1712,11 @@ fun RgbSliderRow(
 
         Text(
             text = colorValue.toString(),
-            color = TextSecondary,
+            fontFamily = MonoFontFamily,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.width(32.dp),
+            modifier = Modifier.width(34.dp),
             textAlign = TextAlign.End
         )
     }
@@ -1175,8 +1731,8 @@ fun AlphaTransparencySection(
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -1192,13 +1748,13 @@ fun AlphaTransparencySection(
                     Icon(
                         imageVector = Icons.Default.Opacity,
                         contentDescription = null,
-                        tint = MinimalPurple,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.alpha_transparency_title),
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp
@@ -1208,38 +1764,37 @@ fun AlphaTransparencySection(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(MinimalPurpleContainer)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "$opacityPercent%",
-                        color = MinimalPurpleDark,
+                        text = stringResource(R.string.percent_format, opacityPercent),
+                        fontFamily = MonoFontFamily,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = stringResource(R.string.alpha_transparency_desc),
-                color = TextSecondary,
-                fontSize = 11.sp,
-                lineHeight = 16.sp
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 11.sp
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Main Opacity Slider
             Slider(
                 value = opacity,
                 onValueChange = onOpacityChange,
                 valueRange = 0.10f..1.00f,
                 colors = SliderDefaults.colors(
-                    thumbColor = MinimalPurple,
-                    activeTrackColor = MinimalPurple,
-                    inactiveTrackColor = MinimalBorder
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outline
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1248,26 +1803,34 @@ fun AlphaTransparencySection(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Quick Preset Opacity Chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf(0.25f to "25%", 0.50f to "50%", 0.75f to "75%", 1.00f to "100%").forEach { (v, label) ->
-                    val isSelected = Math.abs(opacity - v) < 0.05f
+                listOf(0.25f to 25, 0.50f to 50, 0.75f to 75, 1.00f to 100).forEach { (v, pct) ->
+                    val isSelected = abs(opacity - v) < 0.05f
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (isSelected) MinimalPurple else MinimalSurfaceContainer)
-                            .border(1.dp, if (isSelected) MinimalPurple else MinimalBorder, RoundedCornerShape(10.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceContainer
+                            )
+                            .border(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                                RoundedCornerShape(10.dp)
+                            )
                             .clickable { onOpacityChange(v) }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = label,
-                            color = if (isSelected) Color.White else TextSecondary,
+                            text = stringResource(R.string.percent_format, pct),
+                            fontFamily = MonoFontFamily,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
@@ -1285,8 +1848,8 @@ fun GeometrySlidersSection(
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -1294,7 +1857,7 @@ fun GeometrySlidersSection(
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
                 text = stringResource(R.string.geometry_sizing_title),
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.8.sp
@@ -1302,75 +1865,77 @@ fun GeometrySlidersSection(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Size Slider
             SliderRow(
                 label = stringResource(R.string.reticle_size_label),
-                valueDisplay = "${config.sizeDp.toInt()} dp",
-                value = config.sizeDp,
+                valueDisplay = stringResource(R.string.unit_dp_int, config.sizeDp.toInt()),
+                value = config.sizeDp.coerceIn(14f, 90f),
                 range = 14f..90f,
-                onValueChange = { v -> onUpdate { it.copy(sizeDp = v) } }
+                onValueChange = { v -> onUpdate { it.copy(sizeDp = v) } },
+                sliderTag = "reticle_size_slider"
             )
 
-            // Line Thickness
             SliderRow(
                 label = stringResource(R.string.line_thickness_label),
-                valueDisplay = String.format("%.1f dp", config.thicknessDp),
+                valueDisplay = stringResource(R.string.unit_dp_float, config.thicknessDp),
                 value = config.thicknessDp,
                 range = 1f..10f,
                 onValueChange = { v -> onUpdate { it.copy(thicknessDp = v) } }
             )
 
-            // Gap
             SliderRow(
                 label = stringResource(R.string.center_gap_label),
-                valueDisplay = "${config.gapDp.toInt()} dp",
+                valueDisplay = stringResource(R.string.unit_dp_int, config.gapDp.toInt()),
                 value = config.gapDp,
                 range = 0f..35f,
                 onValueChange = { v -> onUpdate { it.copy(gapDp = v) } }
             )
 
-            // Center Dot Size
             if (config.centerDot) {
                 SliderRow(
                     label = stringResource(R.string.dot_size_label),
-                    valueDisplay = String.format("%.1f dp", config.centerDotSizeDp),
+                    valueDisplay = stringResource(R.string.unit_dp_float, config.centerDotSizeDp),
                     value = config.centerDotSizeDp,
                     range = 1f..12f,
                     onValueChange = { v -> onUpdate { it.copy(centerDotSizeDp = v) } }
                 )
             }
 
-            // Rotation
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${stringResource(R.string.rotation_label)} (${config.rotationDeg.toInt()}°)",
-                    color = TextSecondary,
+                    text = "${stringResource(R.string.rotation_label)} (${stringResource(R.string.unit_deg_int, config.rotationDeg.toInt())})",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf(0f, 45f, 90f).forEach { deg ->
+                    listOf(0f, 45f, 90f, 135f, 180f, 270f).forEach { deg ->
+                        val isSel = abs(config.rotationDeg - deg) < 2f
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (config.rotationDeg == deg) MinimalPurpleLight else MinimalSurfaceContainer)
+                                .background(
+                                    if (isSel) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceContainer
+                                )
                                 .border(
                                     1.dp,
-                                    if (config.rotationDeg == deg) MinimalPurple else MinimalBorder,
+                                    if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                                     RoundedCornerShape(12.dp)
                                 )
                                 .clickable { onUpdate { it.copy(rotationDeg = deg) } }
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                .padding(horizontal = 8.dp, vertical = 5.dp)
                         ) {
                             Text(
-                                text = "${deg.toInt()}°",
-                                color = if (config.rotationDeg == deg) MinimalPurpleDark else TextSecondary,
+                                text = stringResource(R.string.unit_deg_int, deg.toInt()),
+                                fontFamily = MonoFontFamily,
+                                color = if (isSel) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
-                                fontWeight = if (config.rotationDeg == deg) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                             )
                         }
                     }
@@ -1381,10 +1946,11 @@ fun GeometrySlidersSection(
                 onValueChange = { v -> onUpdate { it.copy(rotationDeg = v) } },
                 valueRange = 0f..360f,
                 colors = SliderDefaults.colors(
-                    thumbColor = MinimalPurple,
-                    activeTrackColor = MinimalPurple,
-                    inactiveTrackColor = MinimalBorder
-                )
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier.testTag("reticle_rotation_slider")
             )
         }
     }
@@ -1398,8 +1964,8 @@ fun CenterAlignmentSection(
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -1413,14 +1979,15 @@ fun CenterAlignmentSection(
                 Column {
                     Text(
                         text = stringResource(R.string.position_alignment_title),
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp
                     )
                     Text(
-                        text = "${stringResource(R.string.offset_label)}: X=${config.offsetX}px, Y=${config.offsetY}px",
-                        color = MinimalPurple,
+                        text = "${stringResource(R.string.offset_label)} ${stringResource(R.string.studio_offset_coords, config.offsetX, config.offsetY)}",
+                        fontFamily = MonoFontFamily,
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -1429,15 +1996,15 @@ fun CenterAlignmentSection(
                 Button(
                     onClick = onReset,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MinimalPurpleLight,
-                        contentColor = MinimalPurpleDark
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.height(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.RestartAlt,
-                        contentDescription = "Reset offset",
-                        tint = MinimalPurpleDark,
+                        contentDescription = stringResource(R.string.cd_reset_offset),
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -1447,42 +2014,38 @@ fun CenterAlignmentSection(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // D-Pad Grid
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // UP
                 NudgeButton(icon = Icons.Default.KeyboardArrowUp, onClick = { onNudge(0, -1) }, tag = "nudge_up")
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // LEFT
-                    NudgeButton(icon = Icons.Default.KeyboardArrowLeft, onClick = { onNudge(-1, 0) }, tag = "nudge_left")
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    NudgeButton(icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft, onClick = { onNudge(-1, 0) }, tag = "nudge_left")
 
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
-                            .background(MinimalPurpleContainer),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "1px",
-                            color = MinimalPurpleDark,
-                            fontSize = 10.sp,
+                            text = stringResource(R.string.unit_1px),
+                            fontFamily = MonoFontFamily,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    // RIGHT
-                    NudgeButton(icon = Icons.Default.KeyboardArrowRight, onClick = { onNudge(1, 0) }, tag = "nudge_right")
+                    NudgeButton(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, onClick = { onNudge(1, 0) }, tag = "nudge_right")
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // DOWN
                 NudgeButton(icon = Icons.Default.KeyboardArrowDown, onClick = { onNudge(0, 1) }, tag = "nudge_down")
             }
         }
@@ -1491,23 +2054,23 @@ fun CenterAlignmentSection(
 
 @Composable
 fun NudgeButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit,
     tag: String
 ) {
     IconButton(
         onClick = onClick,
         modifier = Modifier
-            .size(44.dp)
+            .size(48.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(MinimalSurfaceContainer)
-            .border(1.dp, MinimalBorder, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .testTag(tag)
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
-            tint = MinimalPurple,
+            contentDescription = stringResource(R.string.cd_nudge_aim),
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
         )
     }
@@ -1519,7 +2082,8 @@ fun SliderRow(
     valueDisplay: String,
     value: Float,
     range: ClosedFloatingPointRange<Float>,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
+    sliderTag: String? = null
 ) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(
@@ -1529,13 +2093,14 @@ fun SliderRow(
         ) {
             Text(
                 text = label,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             )
             Text(
                 text = valueDisplay,
-                color = MinimalPurple,
+                fontFamily = MonoFontFamily,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -1545,10 +2110,11 @@ fun SliderRow(
             onValueChange = onValueChange,
             valueRange = range,
             colors = SliderDefaults.colors(
-                thumbColor = MinimalPurple,
-                activeTrackColor = MinimalPurple,
-                inactiveTrackColor = MinimalBorder
-            )
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.outline
+            ),
+            modifier = if (sliderTag != null) Modifier.testTag(sliderTag) else Modifier
         )
     }
 }

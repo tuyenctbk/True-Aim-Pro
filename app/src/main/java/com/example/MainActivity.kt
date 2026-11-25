@@ -1,15 +1,36 @@
 package com.example
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,39 +45,50 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.example.ui.theme.tvFocusable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.data.ai.configureAppCheck
+import com.example.data.engagement.SmartPopupProposal
+import com.example.ui.AiLabViewModel
 import com.example.ui.CrosshairViewModel
 import com.example.ui.components.ImportCrosshairDialog
 import com.example.ui.components.PermissionExplanationDialog
@@ -64,55 +96,65 @@ import com.example.ui.components.SavePresetDialog
 import com.example.ui.components.ShareCrosshairDialog
 import com.example.ui.components.SmartRateAppDialog
 import com.example.ui.components.SmartShareAppDialog
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import com.example.ui.components.SmartUpdateAppDialog
+import com.example.ui.screens.AiLabScreen
 import com.example.ui.screens.AimTrainerScreen
 import com.example.ui.screens.GuidesAndSettingsScreen
 import com.example.ui.screens.OnboardingScreen
+import com.example.ui.screens.PredefinedDesignsScreen
+import com.example.ui.screens.ReticleGalleryScreen
+import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.StudioScreen
-import com.example.ui.theme.LaserCrimson
-import com.example.ui.theme.MinimalBorder
-import com.example.ui.theme.MinimalCanvas
-import com.example.ui.theme.MinimalGreen
-import com.example.ui.theme.MinimalPurple
-import com.example.ui.theme.MinimalPurpleContainer
-import com.example.ui.theme.MinimalPurpleDark
-import com.example.ui.theme.MinimalPurpleLight
-import com.example.ui.theme.MinimalSurface
+import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.MonoFontFamily
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusable
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: CrosshairViewModel by viewModels()
+    private val aiLabViewModel: AiLabViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // STEP 1: Configure Firebase App Check with launch intent before any UI, ViewModels, or Firebase calls
+        configureAppCheck(this, intent)
+
         enableEdgeToEdge()
 
         setContent {
             val isDarkMode by viewModel.isDarkMode.collectAsState()
             MyApplicationTheme(darkTheme = isDarkMode) {
-                CrosshairMainApp(viewModel = viewModel)
+                CrosshairMainApp(
+                    viewModel = viewModel,
+                    aiLabViewModel = aiLabViewModel
+                )
             }
         }
     }
 }
 
-enum class NavSection(val titleRes: Int, val icon: ImageVector) {
-    STUDIO(R.string.nav_studio, Icons.Default.Tune),
-    GALLERY(R.string.nav_presets, Icons.Default.GridView),
-    TRAINER(R.string.nav_trainer, Icons.Default.SportsEsports),
-    GUIDES(R.string.nav_guides_settings, Icons.Default.Info)
+enum class NavSection(val routeKey: String, val titleRes: Int, val icon: ImageVector) {
+    STUDIO("studio", R.string.nav_studio, Icons.Default.Tune),
+    GALLERY("gallery", R.string.nav_presets, Icons.Default.GridView),
+    AI_LAB("ai_lab", R.string.nav_ai_lab, Icons.Default.AutoAwesome),
+    TRAINER("trainer", R.string.nav_trainer, Icons.Default.SportsEsports),
+    GUIDES("settings", R.string.nav_guides_settings, Icons.Default.Info)
 }
 
 @Composable
-fun CrosshairMainApp(viewModel: CrosshairViewModel) {
+fun CrosshairMainApp(
+    viewModel: CrosshairViewModel,
+    aiLabViewModel: AiLabViewModel
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var selectedSection by remember { mutableIntStateOf(0) }
+    var showPredefinedDesigns by remember { mutableStateOf(false) }
 
+    val isSplashVisible by viewModel.isSplashVisible.collectAsState()
     val isOverlayActive by viewModel.isOverlayActive.collectAsState()
     val showSaveDialog by viewModel.showSaveDialog.collectAsState()
     val showPermissionDialog by viewModel.showPermissionDialog.collectAsState()
@@ -120,126 +162,209 @@ fun CrosshairMainApp(viewModel: CrosshairViewModel) {
     val showImportDialog by viewModel.showImportDialog.collectAsState()
     val hasCompletedOnboarding by viewModel.hasCompletedOnboarding.collectAsState()
     val isPermissionGranted by viewModel.isOverlayPermissionGranted.collectAsState()
-    val showSmartRateDialog by viewModel.showSmartRateDialog.collectAsState()
-    val showSmartShareDialog by viewModel.showSmartShareDialog.collectAsState()
+    val activeSmartPopup by viewModel.activeSmartPopup.collectAsState()
+    val updateCheckMessageRes by viewModel.updateCheckMessageRes.collectAsState()
 
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val isWideScreen = screenWidthDp >= 600
+    // Automatically refresh overlay permission state whenever user returns from System Settings
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshPermissionState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
-    if (!hasCompletedOnboarding) {
-        OnboardingScreen(
-            isPermissionGranted = isPermissionGranted,
-            onCompleteOnboarding = { viewModel.completeOnboarding() },
-            onRefreshPermission = { viewModel.refreshPermissionState() }
-        )
-    } else {
-        if (isWideScreen) {
-            // Adaptive TV & Tablet Side-by-Side Dual Pane Layout
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                GamerNavRail(
-                    selectedIndex = selectedSection,
-                    onSelectIndex = { selectedSection = it },
-                    isOverlayActive = isOverlayActive,
-                    onToggleOverlay = { viewModel.toggleOverlay() }
+    // Android 13+ POST_NOTIFICATIONS runtime permission launcher for Foreground Service notification
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.logNotificationsPermissionGranted()
+        }
+        viewModel.toggleOverlay()
+    }
+
+    val handleToggleOverlay: () -> Unit = {
+        if (!isOverlayActive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasNotifPermission = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasNotifPermission && isPermissionGranted) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                viewModel.toggleOverlay()
+            }
+        } else {
+            viewModel.toggleOverlay()
+        }
+    }
+
+    // Notify ViewModel on tab switch (analytics + clean Aim Trainer stop)
+    LaunchedEffect(selectedSection, showPredefinedDesigns, isSplashVisible, hasCompletedOnboarding) {
+        if (!isSplashVisible && hasCompletedOnboarding) {
+            if (showPredefinedDesigns) {
+                viewModel.onScreenSelected("predefined_designs")
+            } else {
+                val section = NavSection.entries.getOrNull(selectedSection) ?: NavSection.STUDIO
+                viewModel.onScreenSelected(section.routeKey)
+            }
+        }
+    }
+
+    // Attempt silent Google auto sign-in for previously authorized accounts after onboarding
+    LaunchedEffect(isSplashVisible, hasCompletedOnboarding) {
+        if (!isSplashVisible && hasCompletedOnboarding) {
+            aiLabViewModel.attemptSilentSignIn(context)
+        }
+    }
+
+    // Show Toast for manual "Check for Updates" result
+    LaunchedEffect(updateCheckMessageRes) {
+        updateCheckMessageRes?.let { resId ->
+            Toast.makeText(context, context.getString(resId), Toast.LENGTH_SHORT).show()
+            viewModel.clearUpdateCheckMessage()
+        }
+    }
+
+    AnimatedContent(
+        targetState = Triple(isSplashVisible, hasCompletedOnboarding, Unit),
+        transitionSpec = {
+            fadeIn(animationSpec = tween(320)) togetherWith fadeOut(animationSpec = tween(260))
+        },
+        label = "app_root_transition"
+    ) { (showSplash, onboarded, _) ->
+        when {
+            showSplash -> {
+                SplashScreen(
+                    onFinished = { viewModel.onSplashFinished() }
                 )
+            }
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                ) {
-                    TopGamerAppBar(
-                        isOverlayActive = isOverlayActive,
-                        onToggleOverlay = { viewModel.toggleOverlay() }
-                    )
+            !onboarded -> {
+                OnboardingScreen(
+                    isPermissionGranted = isPermissionGranted,
+                    onCompleteOnboarding = { viewModel.completeOnboarding() },
+                    onRefreshPermission = { viewModel.refreshPermissionState() }
+                )
+            }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        when (selectedSection) {
-                            0 -> StudioScreen(
-                                viewModel = viewModel,
-                                onNavigateToTrainer = { selectedSection = 2 }
-                            )
-                            1 -> com.example.ui.screens.ReticleGalleryScreen(
-                                viewModel = viewModel,
-                                onNavigateToStudio = { selectedSection = 0 }
-                            )
-                            2 -> AimTrainerScreen(
-                                viewModel = viewModel
-                            )
-                            3 -> GuidesAndSettingsScreen(
-                                viewModel = viewModel,
-                                onReopenWalkthrough = {
-                                    viewModel.reopenOnboarding()
-                                    selectedSection = 0
-                                },
-                                onResetToDefaults = {
-                                    viewModel.resetToFactoryDefaults()
+            else -> {
+                AnimatedContent(
+                    targetState = showPredefinedDesigns,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(180))
+                    },
+                    label = "predefined_designs_transition"
+                ) { showingDesigns ->
+                    if (showingDesigns) {
+                        PredefinedDesignsScreen(
+                            viewModel = viewModel,
+                            onNavigateBack = { showPredefinedDesigns = false },
+                            onCustomizeInStudio = {
+                                showPredefinedDesigns = false
+                                selectedSection = 0
+                            },
+                            onToggleOverlay = handleToggleOverlay,
+                            onEnsureOverlayStarted = {
+                                if (!isOverlayActive) {
+                                    handleToggleOverlay()
                                 }
-                            )
+                            }
+                        )
+                    } else {
+                        BackHandler(enabled = selectedSection != 0) {
+                            selectedSection = 0
+                        }
+
+                        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                            val isWideScreen = maxWidth >= 600.dp
+
+                            if (isWideScreen) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(MaterialTheme.colorScheme.background)
+                                ) {
+                                    GamerNavRail(
+                                        selectedIndex = selectedSection,
+                                        onSelectIndex = { selectedSection = it },
+                                        isOverlayActive = isOverlayActive,
+                                        onToggleOverlay = handleToggleOverlay
+                                    )
+
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxSize()
+                                    ) {
+                                        TopGamerAppBar(
+                                            isOverlayActive = isOverlayActive,
+                                            onToggleOverlay = handleToggleOverlay
+                                        )
+
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(horizontal = 16.dp)
+                                        ) {
+                                            MainSectionHost(
+                                                selectedSection = selectedSection,
+                                                viewModel = viewModel,
+                                                aiLabViewModel = aiLabViewModel,
+                                                onToggleOverlay = handleToggleOverlay,
+                                                onNavigateToSection = { selectedSection = it },
+                                                onNavigateToDesigns = { showPredefinedDesigns = true }
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                Scaffold(
+                                    modifier = Modifier.fillMaxSize(),
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    topBar = {
+                                        TopGamerAppBar(
+                                            isOverlayActive = isOverlayActive,
+                                            onToggleOverlay = handleToggleOverlay
+                                        )
+                                    },
+                                    bottomBar = {
+                                        BottomGamerNavBar(
+                                            selectedIndex = selectedSection,
+                                            onSelectIndex = { selectedSection = it }
+                                        )
+                                    }
+                                ) { innerPadding ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(innerPadding)
+                                    ) {
+                                        MainSectionHost(
+                                            selectedSection = selectedSection,
+                                            viewModel = viewModel,
+                                            aiLabViewModel = aiLabViewModel,
+                                            onToggleOverlay = handleToggleOverlay,
+                                            onNavigateToSection = { selectedSection = it },
+                                            onNavigateToDesigns = { showPredefinedDesigns = true }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-        } else {
-            // Standard Mobile Layout
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                containerColor = MaterialTheme.colorScheme.background,
-                topBar = {
-                    TopGamerAppBar(
-                        isOverlayActive = isOverlayActive,
-                        onToggleOverlay = { viewModel.toggleOverlay() }
-                    )
-                },
-                bottomBar = {
-                    BottomGamerNavBar(
-                        selectedIndex = selectedSection,
-                        onSelectIndex = { selectedSection = it }
-                    )
-                }
-            ) { innerPadding ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    when (selectedSection) {
-                        0 -> StudioScreen(
-                            viewModel = viewModel,
-                            onNavigateToTrainer = { selectedSection = 2 }
-                        )
-                        1 -> com.example.ui.screens.ReticleGalleryScreen(
-                            viewModel = viewModel,
-                            onNavigateToStudio = { selectedSection = 0 }
-                        )
-                        2 -> AimTrainerScreen(
-                            viewModel = viewModel
-                        )
-                        3 -> GuidesAndSettingsScreen(
-                            viewModel = viewModel,
-                            onReopenWalkthrough = {
-                                viewModel.reopenOnboarding()
-                                selectedSection = 0
-                            },
-                            onResetToDefaults = {
-                                viewModel.resetToFactoryDefaults()
-                            }
-                        )
-                    }
-                }
-            }
         }
+    }
 
-        // Dialogs
+    // Modal Dialogs (only active after splash & onboarding)
+    if (!isSplashVisible && hasCompletedOnboarding) {
         if (showSaveDialog) {
             val activeConfig by viewModel.activeConfig.collectAsState()
             SavePresetDialog(
@@ -251,7 +376,8 @@ fun CrosshairMainApp(viewModel: CrosshairViewModel) {
 
         if (showPermissionDialog) {
             PermissionExplanationDialog(
-                onDismiss = { viewModel.dismissPermissionDialog() }
+                onDismiss = { viewModel.dismissPermissionDialog() },
+                isPermissionGranted = isPermissionGranted
             )
         }
 
@@ -270,17 +396,99 @@ fun CrosshairMainApp(viewModel: CrosshairViewModel) {
             )
         }
 
-        if (showSmartRateDialog) {
-            SmartRateAppDialog(
-                onRateSubmitted = { viewModel.markAppRated() },
-                onDismissLater = { viewModel.dismissRatePrompt() }
-            )
-        }
+        // Single-slot Smart Auto-Popup Host (prevents overlapping popups)
+        when (val proposal = activeSmartPopup) {
+            is SmartPopupProposal.UpdateApp -> {
+                SmartUpdateAppDialog(
+                    proposal = proposal,
+                    onUpdateNow = { viewModel.onSmartUpdateAccepted(proposal.latestVersionCode) },
+                    onDismissLater = { viewModel.onSmartUpdateLater() },
+                    onSkipVersion = { viewModel.onSmartUpdateSkipped(proposal.latestVersionCode) }
+                )
+            }
 
-        if (showSmartShareDialog) {
-            SmartShareAppDialog(
-                onShareConfirmed = { viewModel.markAppShared() },
-                onDismissLater = { viewModel.dismissSharePrompt() }
+            is SmartPopupProposal.RateApp -> {
+                SmartRateAppDialog(
+                    onRateSubmitted = { stars -> viewModel.onSmartRateSubmitted(stars) },
+                    onDismissLater = { viewModel.onSmartRateDismissedLater() },
+                    onNeverAsk = { viewModel.onSmartRateNeverAsk() }
+                )
+            }
+
+            is SmartPopupProposal.ShareApp -> {
+                SmartShareAppDialog(
+                    onShareConfirmed = { viewModel.onSmartShareConfirmed() },
+                    onDismissLater = { viewModel.onSmartShareDismissedLater() },
+                    onNeverAsk = { viewModel.onSmartShareNeverAsk() }
+                )
+            }
+
+            null -> Unit
+        }
+    }
+}
+
+@Composable
+private fun MainSectionHost(
+    selectedSection: Int,
+    viewModel: CrosshairViewModel,
+    aiLabViewModel: AiLabViewModel,
+    onToggleOverlay: () -> Unit,
+    onNavigateToSection: (Int) -> Unit,
+    onNavigateToDesigns: () -> Unit
+) {
+    AnimatedContent(
+        targetState = selectedSection,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(180))
+        },
+        label = "section_content_transition"
+    ) { targetSection ->
+        when (targetSection) {
+            0 -> StudioScreen(
+                viewModel = viewModel,
+                onNavigateToTrainer = { onNavigateToSection(3) },
+                onNavigateToGallery = { onNavigateToSection(1) },
+                onNavigateToDesigns = onNavigateToDesigns,
+                onToggleOverlay = onToggleOverlay
+            )
+
+            1 -> ReticleGalleryScreen(
+                viewModel = viewModel,
+                onNavigateToStudio = { onNavigateToSection(0) },
+                onNavigateToDesigns = onNavigateToDesigns
+            )
+
+            2 -> AiLabScreen(
+                crosshairViewModel = viewModel,
+                aiViewModel = aiLabViewModel,
+                onNavigateToStudio = { onNavigateToSection(0) }
+            )
+
+            3 -> AimTrainerScreen(
+                viewModel = viewModel,
+                onAnalyzeWithAiCoach = {
+                    aiLabViewModel.selectTool(2)
+                    aiLabViewModel.runAimCoach(
+                        lastDrill = viewModel.gameState.value,
+                        difficulty = viewModel.selectedDifficulty.value,
+                        usageStats = viewModel.usageStats.value,
+                        summary = viewModel.analyticsSummary.value,
+                        activeConfig = viewModel.activeConfig.value
+                    )
+                    onNavigateToSection(2)
+                }
+            )
+
+            4 -> GuidesAndSettingsScreen(
+                viewModel = viewModel,
+                onReopenWalkthrough = {
+                    viewModel.reopenOnboarding()
+                    onNavigateToSection(0)
+                },
+                onResetToDefaults = {
+                    viewModel.resetToFactoryDefaults()
+                }
             )
         }
     }
@@ -296,32 +504,39 @@ fun GamerNavRail(
     Surface(
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
-            .width(105.dp)
+            .width(104.dp)
             .fillMaxHeight(),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(vertical = 24.dp, horizontal = 4.dp),
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(vertical = 20.dp, horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.CenterFocusStrong,
+                Image(
+                    painter = painterResource(id = R.drawable.img_trueaim_app_icon_1795534801161),
                     contentDescription = stringResource(R.string.app_name),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(22.dp))
 
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(if (isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
+                        .background(
+                            if (isOverlayActive) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.primaryContainer
+                        )
                         .clickable { onToggleOverlay() }
                         .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
                         .testTag("appbar_quick_toggle_rail"),
@@ -329,18 +544,19 @@ fun GamerNavRail(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PowerSettingsNew,
-                        contentDescription = "Toggle Crosshair Overlay",
-                        tint = if (isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+                        contentDescription = stringResource(R.string.cd_toggle_overlay),
+                        tint = if (isOverlayActive) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                NavSection.values().forEachIndexed { index, section ->
+                NavSection.entries.forEachIndexed { index, section ->
                     val isSelected = selectedIndex == index
                     val titleStr = stringResource(section.titleRes)
 
@@ -350,27 +566,32 @@ fun GamerNavRail(
                             .clickable { onSelectIndex(index) }
                             .tvFocusable(RoundedCornerShape(16.dp), MaterialTheme.colorScheme.primary)
                             .padding(horizontal = 8.dp, vertical = 6.dp)
-                            .testTag("nav_tab_rail_${section.name.lowercase()}"),
+                            .testTag("nav_tab_rail_${section.routeKey}"),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(22.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent),
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                    else Color.Transparent
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = section.icon,
                                 contentDescription = titleStr,
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = titleStr,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 10.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             maxLines = 1,
@@ -382,8 +603,9 @@ fun GamerNavRail(
             }
 
             Text(
-                text = "v${BuildConfig.VERSION_NAME}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                text = stringResource(R.string.app_version_label, BuildConfig.VERSION_NAME),
+                fontFamily = MonoFontFamily,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 fontSize = 10.sp
             )
         }
@@ -395,6 +617,24 @@ fun TopGamerAppBar(
     isOverlayActive: Boolean,
     onToggleOverlay: () -> Unit
 ) {
+    val pulseTransition = rememberInfiniteTransition(label = "live_status_pulse")
+    val livePulse by pulseTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "livePulse"
+    )
+
+    val powerBg by animateColorAsState(
+        targetValue = if (isOverlayActive) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = tween(250),
+        label = "powerBg"
+    )
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth()
@@ -407,44 +647,62 @@ fun TopGamerAppBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App Brand with Clean Minimalism style
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.img_trueaim_app_icon_1795534801161),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
                     Text(
                         text = stringResource(R.string.app_name),
+                        fontFamily = DisplayFontFamily,
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.5).sp
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.4).sp
                     )
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(if (isOverlayActive) NeonGreen else MinimalGreen)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (isOverlayActive) stringResource(R.string.active_live) else stringResource(R.string.inactive),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp
-                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .graphicsLayer {
+                                    if (isOverlayActive) {
+                                        scaleX = livePulse
+                                        scaleY = livePulse
+                                    }
+                                }
+                                .clip(CircleShape)
+                                .background(
+                                    if (isOverlayActive) NeonGreen
+                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                                )
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isOverlayActive) stringResource(R.string.active_live)
+                            else stringResource(R.string.inactive),
+                            fontFamily = MonoFontFamily,
+                            color = if (isOverlayActive) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp
+                        )
+                    }
                 }
             }
 
-            // Clean Minimalist Power/Settings Button
             Box(
                 modifier = Modifier
-                    .size(46.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .background(if (isOverlayActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
+                    .background(powerBg)
                     .clickable { onToggleOverlay() }
                     .tvFocusable(CircleShape, MaterialTheme.colorScheme.primary)
                     .testTag("appbar_quick_toggle"),
@@ -452,8 +710,9 @@ fun TopGamerAppBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.PowerSettingsNew,
-                    contentDescription = "Toggle Crosshair Overlay",
-                    tint = if (isOverlayActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+                    contentDescription = stringResource(R.string.cd_toggle_overlay),
+                    tint = if (isOverlayActive) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -468,9 +727,9 @@ fun BottomGamerNavBar(
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 3.dp,
-        shadowElevation = 4.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+        tonalElevation = 4.dp,
+        shadowElevation = 6.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
@@ -478,13 +737,18 @@ fun BottomGamerNavBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 4.dp),
+                .padding(vertical = 8.dp, horizontal = 6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            NavSection.values().forEachIndexed { index, section ->
+            NavSection.entries.forEachIndexed { index, section ->
                 val isSelected = selectedIndex == index
                 val titleStr = stringResource(section.titleRes)
+                val pillWidth by animateDpAsState(
+                    targetValue = if (isSelected) 54.dp else 36.dp,
+                    animationSpec = tween(220, easing = FastOutSlowInEasing),
+                    label = "nav_pill_width_$index"
+                )
 
                 Column(
                     modifier = Modifier
@@ -493,27 +757,33 @@ fun BottomGamerNavBar(
                         .clickable { onSelectIndex(index) }
                         .tvFocusable(RoundedCornerShape(16.dp), MaterialTheme.colorScheme.primary)
                         .padding(horizontal = 4.dp, vertical = 4.dp)
-                        .testTag("nav_tab_${section.name.lowercase()}"),
+                        .testTag("nav_tab_${section.routeKey}"),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(19.dp))
-                            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent),
+                            .width(pillWidth)
+                            .height(34.dp)
+                            .clip(RoundedCornerShape(17.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                else Color.Transparent
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = section.icon,
                             contentDescription = titleStr,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = titleStr,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 10.5.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         maxLines = 1,

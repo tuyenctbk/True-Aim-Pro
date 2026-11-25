@@ -1,6 +1,17 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,9 +35,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Timer
@@ -36,104 +47,108 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.example.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.AimDifficulty
 import com.example.ui.AimGameState
+import com.example.ui.AimGameStats
 import com.example.ui.CrosshairViewModel
 import com.example.ui.PreviewBackground
 import com.example.ui.components.CrosshairView
 import com.example.ui.components.GameBackgroundCanvas
 import com.example.ui.theme.ArenaDarkCanvas
 import com.example.ui.theme.LaserCrimson
-import com.example.ui.theme.tvFocusable
-import com.example.ui.theme.MinimalBorder
-import com.example.ui.theme.MinimalCanvas
-import com.example.ui.theme.MinimalGreen
-import com.example.ui.theme.MinimalPurple
-import com.example.ui.theme.MinimalPurpleContainer
-import com.example.ui.theme.MinimalPurpleDark
-import com.example.ui.theme.MinimalPurpleLight
-import com.example.ui.theme.MinimalSurface
-import com.example.ui.theme.MinimalSurfaceContainer
+import com.example.ui.theme.MonoFontFamily
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.SolarYellow
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusable
 
 @Composable
 fun AimTrainerScreen(
     viewModel: CrosshairViewModel,
+    onAnalyzeWithAiCoach: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val stats by viewModel.gameState.collectAsState()
     val config by viewModel.activeConfig.collectAsState()
     val background by viewModel.selectedBackground.collectAsState()
     val difficulty by viewModel.selectedDifficulty.collectAsState()
+    val lastHit by viewModel.lastHitFeedback.collectAsState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = 90.dp)
+            .padding(bottom = 16.dp)
             .padding(horizontal = 16.dp)
+            .testTag("aim_trainer_screen")
     ) {
-        // Score & Live Stats HUD
         StatsHudBar(stats)
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Background Selector Pill Row for Fast Map Switching
+        // Background Selector Pill Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
                 .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Default.Wallpaper,
                 contentDescription = null,
-                tint = MinimalPurple,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(16.dp)
             )
             Text(
                 text = stringResource(R.string.trainer_map_label),
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
-            PreviewBackground.values().forEach { bg ->
+            PreviewBackground.entries.forEach { bg ->
                 val isSelected = background == bg
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) MinimalPurple else MinimalSurface)
-                        .border(1.dp, if (isSelected) MinimalPurple else MinimalBorder, RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .border(
+                            1.dp,
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            RoundedCornerShape(12.dp)
+                        )
                         .clickable { viewModel.setBackground(bg) }
-                        .tvFocusable(RoundedCornerShape(12.dp), MinimalPurple)
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .tvFocusable(RoundedCornerShape(12.dp), MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = bg.displayName,
-                        color = if (isSelected) Color.White else TextSecondary,
+                        text = stringResource(bg.nameRes),
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                     )
@@ -143,26 +158,29 @@ fun AimTrainerScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Interactive Target Shooting Arena with Clean Minimalist styled frame
+        // Interactive Target Shooting Arena
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
                 .clip(RoundedCornerShape(24.dp))
                 .background(ArenaDarkCanvas)
-                .border(2.5.dp, if (stats.state == AimGameState.PLAYING) MinimalPurple else MinimalBorder, RoundedCornerShape(24.dp))
+                .border(
+                    2.dp,
+                    if (stats.state == AimGameState.PLAYING) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline,
+                    RoundedCornerShape(24.dp)
+                )
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val arenaWidth = maxWidth
                 val arenaHeight = maxHeight
 
-                // Arena Background
                 GameBackgroundCanvas(background = background)
 
-                // The User's Active Crosshair centered
+                // User's Active Crosshair centered
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CrosshairView(
@@ -185,10 +203,21 @@ fun AimTrainerScreen(
                     )
                 }
 
-                // Active Target
+                // Active Target with Spring Pop-In Animation
                 if (stats.state == AimGameState.PLAYING && stats.currentTarget != null) {
                     val target = stats.currentTarget!!
-                    val targetSizeDp = (target.radiusDp * 2).dp
+                    val targetScale = remember(target.id) { Animatable(0.25f) }
+                    LaunchedEffect(target.id) {
+                        targetScale.animateTo(
+                            targetValue = 1f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            )
+                        )
+                    }
+
+                    val targetSizeDp = (target.radiusDp * 2f).dp
                     val targetX = arenaWidth * target.xFraction - (targetSizeDp / 2)
                     val targetY = arenaHeight * target.yFraction - (targetSizeDp / 2)
 
@@ -196,6 +225,10 @@ fun AimTrainerScreen(
                         modifier = Modifier
                             .offset(x = targetX, y = targetY)
                             .size(targetSizeDp)
+                            .graphicsLayer {
+                                scaleX = targetScale.value
+                                scaleY = targetScale.value
+                            }
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
@@ -205,20 +238,9 @@ fun AimTrainerScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.size(targetSizeDp)) {
-                            // Outer Target Ring
-                            drawCircle(
-                                color = LaserCrimson,
-                                radius = size.minDimension / 2f
-                            )
-                            drawCircle(
-                                color = Color.White,
-                                radius = size.minDimension / 2.8f
-                            )
-                            drawCircle(
-                                color = LaserCrimson,
-                                radius = size.minDimension / 4.2f
-                            )
-                            // Headshot Bullseye
+                            drawCircle(color = LaserCrimson, radius = size.minDimension / 2f)
+                            drawCircle(color = Color.White, radius = size.minDimension / 2.8f)
+                            drawCircle(color = LaserCrimson, radius = size.minDimension / 4.2f)
                             drawCircle(
                                 color = if (target.isHeadshotRing) SolarYellow else Color.White,
                                 radius = size.minDimension / 8f
@@ -236,7 +258,68 @@ fun AimTrainerScreen(
                     }
                 }
 
-                // Overlays for Idle / Finished
+                // Animated Hit Feedback Ripple + Floating Score Popup
+                lastHit?.let { hit ->
+                    val hitAnimProgress = remember(hit.id) { Animatable(0f) }
+                    LaunchedEffect(hit.id) {
+                        hitAnimProgress.animateTo(
+                            targetValue = 1f,
+                            animationSpec = tween(durationMillis = 620, easing = FastOutSlowInEasing)
+                        )
+                    }
+
+                    if (hitAnimProgress.value < 1f) {
+                        val rippleSize = (28f + 44f * hitAnimProgress.value).dp
+                        val rippleAlpha = (1f - hitAnimProgress.value).coerceIn(0f, 1f)
+                        Canvas(
+                            modifier = Modifier
+                                .offset(
+                                    x = arenaWidth * hit.xFraction - rippleSize / 2,
+                                    y = arenaHeight * hit.yFraction - rippleSize / 2
+                                )
+                                .size(rippleSize)
+                        ) {
+                            drawCircle(
+                                color = (if (hit.isHeadshot) SolarYellow else NeonGreen).copy(alpha = rippleAlpha),
+                                radius = size.minDimension / 2f,
+                                style = Stroke(width = 2.5.dp.toPx())
+                            )
+                        }
+
+                        val floatY = (arenaHeight * hit.yFraction) - (36 * hitAnimProgress.value).dp
+                        val floatX = arenaWidth * hit.xFraction - 30.dp
+                        val scale = 0.85f + (0.3f * hitAnimProgress.value)
+
+                        Box(
+                            modifier = Modifier
+                                .offset(x = floatX, y = floatY)
+                                .graphicsLayer {
+                                    alpha = rippleAlpha
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (hit.isHeadshot) SolarYellow.copy(alpha = 0.94f)
+                                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = if (hit.isHeadshot)
+                                    stringResource(R.string.trainer_hit_crit, hit.scoreDelta)
+                                else
+                                    stringResource(R.string.trainer_hit_regular, hit.scoreDelta),
+                                fontFamily = MonoFontFamily,
+                                color = if (hit.isHeadshot) Color.Black else MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Idle Overlay
                 if (stats.state == AimGameState.IDLE) {
                     Box(
                         modifier = Modifier
@@ -250,24 +333,23 @@ fun AimTrainerScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(56.dp)
+                                    .size(58.dp)
                                     .clip(CircleShape)
-                                    .background(MinimalPurpleLight),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Speed,
                                     contentDescription = null,
-                                    tint = MinimalPurpleDark,
-                                    modifier = Modifier.size(32.dp)
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(30.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             Text(
                                 text = stringResource(R.string.reflex_aim_drill_title),
                                 color = Color.White,
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge,
                                 letterSpacing = 1.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -278,38 +360,40 @@ fun AimTrainerScreen(
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(14.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            // Difficulty Picker Pills
                             Text(
                                 text = stringResource(R.string.difficulty_label),
-                                color = MinimalPurpleLight,
+                                color = NeonGreen,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                AimDifficulty.values().forEach { diff ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                AimDifficulty.entries.forEach { diff ->
                                     val isDiffSelected = difficulty == diff
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(if (isDiffSelected) MinimalPurple else Color.White.copy(alpha = 0.12f))
+                                            .background(
+                                                if (isDiffSelected) MaterialTheme.colorScheme.primary
+                                                else Color.White.copy(alpha = 0.12f)
+                                            )
                                             .border(
                                                 1.dp,
-                                                if (isDiffSelected) MinimalPurpleLight else Color.White.copy(alpha = 0.2f),
+                                                if (isDiffSelected) MaterialTheme.colorScheme.primary
+                                                else Color.White.copy(alpha = 0.22f),
                                                 RoundedCornerShape(12.dp)
                                             )
                                             .clickable { viewModel.setDifficulty(diff) }
-                                            .tvFocusable(RoundedCornerShape(12.dp), MinimalPurple)
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                            .tvFocusable(RoundedCornerShape(12.dp), MaterialTheme.colorScheme.primary)
+                                            .padding(horizontal = 12.dp, vertical = 8.dp)
                                     ) {
                                         Text(
-                                            text = diff.title,
-                                            color = if (isDiffSelected) Color.White else Color.White.copy(alpha = 0.8f),
+                                            text = stringResource(diff.titleRes),
+                                            color = if (isDiffSelected) MaterialTheme.colorScheme.onPrimary
+                                            else Color.White.copy(alpha = 0.85f),
                                             fontSize = 11.sp,
                                             fontWeight = if (isDiffSelected) FontWeight.Bold else FontWeight.Medium
                                         )
@@ -317,19 +401,19 @@ fun AimTrainerScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(18.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
 
                             Button(
                                 onClick = { viewModel.startAimTrainer() },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MinimalPurple,
-                                    contentColor = Color.White
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
                                 ),
                                 shape = RoundedCornerShape(14.dp),
                                 modifier = Modifier
                                     .height(48.dp)
                                     .fillMaxWidth(0.75f)
-                                    .tvFocusable(RoundedCornerShape(14.dp), MinimalPurple)
+                                    .tvFocusable(RoundedCornerShape(14.dp), MaterialTheme.colorScheme.primary)
                                     .testTag("start_aim_trainer_btn")
                             ) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null)
@@ -351,7 +435,9 @@ fun AimTrainerScreen(
                     ) {
                         SummaryScoreCard(
                             stats = stats,
-                            onRestart = { viewModel.startAimTrainer() }
+                            onRestart = { viewModel.startAimTrainer() },
+                            onDone = { viewModel.dismissAimSummaryToIdle() },
+                            onAnalyzeWithAiCoach = onAnalyzeWithAiCoach
                         )
                     }
                 }
@@ -361,12 +447,36 @@ fun AimTrainerScreen(
 }
 
 @Composable
-fun StatsHudBar(stats: com.example.ui.AimGameStats) {
+fun StatsHudBar(stats: AimGameStats) {
+    val isLowTime = stats.timeLeftSec in 1..5 && stats.state == AimGameState.PLAYING
+    val timerPulseScale by if (isLowTime) {
+        val infiniteTransition = rememberInfiniteTransition(label = "timer_pulse")
+        infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.14f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(380, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "timerPulseScale"
+        )
+    } else {
+        remember { mutableFloatStateOf(1f) }
+    }
+
+    val streakScale by animateFloatAsState(
+        targetValue = if (stats.currentStreak > 0) 1.08f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "streakScale"
+    )
+
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
-        modifier = Modifier.fillMaxWidth()
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("stats_hud_card")
     ) {
         Row(
             modifier = Modifier
@@ -375,41 +485,52 @@ fun StatsHudBar(stats: com.example.ui.AimGameStats) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Timer
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.graphicsLayer {
+                    scaleX = timerPulseScale
+                    scaleY = timerPulseScale
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Timer,
                     contentDescription = null,
-                    tint = if (stats.timeLeftSec <= 5) LaserCrimson else MinimalPurple,
+                    tint = if (isLowTime) LaserCrimson else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "${stats.timeLeftSec}s",
-                    color = if (stats.timeLeftSec <= 5) LaserCrimson else MinimalPurple,
+                    text = stringResource(R.string.unit_sec_short_format, stats.timeLeftSec),
+                    fontFamily = MonoFontFamily,
+                    color = if (isLowTime) LaserCrimson else MaterialTheme.colorScheme.primary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // Score
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(R.string.score_label),
-                    color = TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "${stats.score}",
-                    color = TextPrimary,
+                    fontFamily = MonoFontFamily,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // Streak
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.graphicsLayer {
+                    scaleX = streakScale
+                    scaleY = streakScale
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.LocalFireDepartment,
                     contentDescription = null,
@@ -418,26 +539,29 @@ fun StatsHudBar(stats: com.example.ui.AimGameStats) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${stats.currentStreak}x",
+                    text = stringResource(R.string.trainer_streak_x_format, stats.currentStreak),
+                    fontFamily = MonoFontFamily,
                     color = SolarYellow,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // Reaction Time
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = stringResource(R.string.avg_reaction_label),
-                    color = TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (stats.avgReactionTimeMs > 0) "${stats.avgReactionTimeMs}ms" else "--",
-                    color = MinimalPurpleDark,
+                    text = if (stats.avgReactionTimeMs > 0) {
+                        stringResource(R.string.unit_ms_format, stats.avgReactionTimeMs)
+                    } else stringResource(R.string.stat_empty_placeholder),
+                    fontFamily = MonoFontFamily,
+                    color = MaterialTheme.colorScheme.secondary,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -446,27 +570,30 @@ fun StatsHudBar(stats: com.example.ui.AimGameStats) {
 
 @Composable
 fun SummaryScoreCard(
-    stats: com.example.ui.AimGameStats,
-    onRestart: () -> Unit
+    stats: AimGameStats,
+    onRestart: () -> Unit,
+    onDone: () -> Unit,
+    onAnalyzeWithAiCoach: (() -> Unit)? = null
 ) {
     val accuracy = if (stats.totalTargets > 0) {
         ((stats.targetsHit.toFloat() / stats.totalTargets.toFloat()) * 100).toInt()
     } else 0
 
     val rank = when {
-        stats.score >= 2500 && accuracy >= 85 -> "SSS • PRO ESPORTS"
-        stats.score >= 1800 -> "DIAMOND AIM"
-        stats.score >= 1200 -> "PLATINUM SHARPSHOOTER"
-        else -> "GOLD RANGER"
+        stats.score >= 2500 && accuracy >= 85 -> stringResource(R.string.rank_sss_pro_esports)
+        stats.score >= 1800 -> stringResource(R.string.rank_diamond_aim)
+        stats.score >= 1200 -> stringResource(R.string.rank_platinum_sharpshooter)
+        else -> stringResource(R.string.rank_gold_ranger)
     }
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MinimalSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MinimalBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .padding(20.dp)
+            .testTag("aim_summary_card")
     ) {
         Column(
             modifier = Modifier.padding(22.dp),
@@ -474,33 +601,33 @@ fun SummaryScoreCard(
         ) {
             Text(
                 text = stringResource(R.string.drill_complete_title),
-                color = TextSecondary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
                 letterSpacing = 1.2.sp
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "${stats.score} PTS",
-                color = MinimalPurple,
+                text = stringResource(R.string.trainer_score_pts_format, stats.score),
+                fontFamily = MonoFontFamily,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MinimalPurpleContainer)
-                    .border(1.dp, MinimalPurpleLight, RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = rank,
-                    color = MinimalPurpleDark,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -508,38 +635,89 @@ fun SummaryScoreCard(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Stat breakdown
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem(label = stringResource(R.string.stat_accuracy), value = "$accuracy%")
-                StatItem(label = stringResource(R.string.stat_reaction), value = "${stats.avgReactionTimeMs}ms")
+                StatItem(label = stringResource(R.string.stat_accuracy), value = stringResource(R.string.percent_format, accuracy))
+                StatItem(
+                    label = stringResource(R.string.stat_reaction),
+                    value = stringResource(R.string.unit_ms_format, stats.avgReactionTimeMs)
+                )
                 StatItem(label = stringResource(R.string.stat_headshots), value = "${stats.headshots}")
-                StatItem(label = stringResource(R.string.stat_best_streak), value = "${stats.bestStreak}x")
+                StatItem(label = stringResource(R.string.stat_best_streak), value = stringResource(R.string.trainer_streak_x_format, stats.bestStreak))
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Button(
-                onClick = onRestart,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MinimalPurple,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .tvFocusable(RoundedCornerShape(14.dp), MinimalPurple)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.play_again_btn),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                OutlinedButton(
+                    onClick = onDone,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    modifier = Modifier
+                        .weight(0.85f)
+                        .height(48.dp)
+                        .testTag("aim_summary_done_btn")
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_done),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Button(
+                    onClick = onRestart,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .weight(1.35f)
+                        .height(48.dp)
+                        .tvFocusable(RoundedCornerShape(14.dp), MaterialTheme.colorScheme.primary)
+                        .testTag("aim_summary_restart_btn")
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.play_again_btn),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            if (onAnalyzeWithAiCoach != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = onAnalyzeWithAiCoach,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .testTag("aim_summary_ai_coach_btn")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.ai_coach_from_summary_btn),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -548,9 +726,14 @@ fun SummaryScoreCard(
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, color = TextTertiary, fontSize = 11.sp)
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = value, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = value,
+            fontFamily = MonoFontFamily,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
-

@@ -1,13 +1,13 @@
 package com.example.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,19 +16,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 
-private val CleanMinimalLightColorScheme = lightColorScheme(
+fun Modifier.tvFocusable(
+    shape: Shape,
+    focusColor: Color = NeonGreen
+): Modifier = composed {
+    var isFocused by remember { mutableStateOf(false) }
+    this
+        .onFocusChanged { isFocused = it.isFocused }
+        .focusable()
+        .then(
+            if (isFocused) Modifier.border(2.5.dp, focusColor, shape) else Modifier
+        )
+}
+
+private val TacticalLightColorScheme = lightColorScheme(
     primary = MinimalPurple,
     onPrimary = Color.White,
     primaryContainer = MinimalPurpleLight,
     onPrimaryContainer = MinimalPurpleDark,
-    secondary = MinimalPurpleDark,
+    secondary = Color(0xFF0284C7),
     onSecondary = Color.White,
-    secondaryContainer = MinimalPurpleContainer,
-    onSecondaryContainer = MinimalPurpleDark,
-    tertiary = MinimalGreen,
+    secondaryContainer = Color(0xFFE0F2FE),
+    onSecondaryContainer = Color(0xFF075985),
+    tertiary = MinimalAmber,
     onTertiary = Color.White,
+    tertiaryContainer = MinimalAmberContainer,
+    onTertiaryContainer = Color(0xFF78350F),
     background = MinimalCanvas,
     onBackground = TextPrimary,
     surface = MinimalSurface,
@@ -39,58 +58,63 @@ private val CleanMinimalLightColorScheme = lightColorScheme(
     surfaceContainerHigh = MinimalSurfaceHigh,
     outline = MinimalBorder,
     outlineVariant = MinimalBorderSubtle,
+    error = LaserCrimson,
+    onError = Color.White
 )
 
-private val CleanMinimalDarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = MinimalGreen,
-    onTertiary = Color.Black,
-    background = Color(0xFF141218),
-    onBackground = Color(0xFFE6E0E9),
-    surface = Color(0xFF1D1B20),
-    onSurface = Color(0xFFE6E0E9),
-    surfaceVariant = Color(0xFF49454F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    surfaceContainer = Color(0xFF2B2930),
-    surfaceContainerHigh = Color(0xFF36343B),
-    outline = Color(0xFF938F99),
-    outlineVariant = Color(0xFF49454F),
+private val TacticalDarkColorScheme = darkColorScheme(
+    primary = NeonGreen,
+    onPrimary = Color(0xFF042615),
+    primaryContainer = Color(0xFF0D3324),
+    onPrimaryContainer = Color(0xFF6EE7B7),
+    secondary = CyanLaser,
+    onSecondary = Color(0xFF002430),
+    secondaryContainer = Color(0xFF0E2A3A),
+    onSecondaryContainer = Color(0xFF7DD3FC),
+    tertiary = SolarYellow,
+    onTertiary = Color(0xFF2B2300),
+    tertiaryContainer = Color(0xFF332B08),
+    onTertiaryContainer = Color(0xFFFDE68A),
+    background = ObsidianCanvas,
+    onBackground = ObsidianTextPrimary,
+    surface = ObsidianSurface,
+    onSurface = ObsidianTextPrimary,
+    surfaceVariant = ObsidianSurfaceContainer,
+    onSurfaceVariant = ObsidianTextSecondary,
+    surfaceContainer = ObsidianSurfaceContainer,
+    surfaceContainerHigh = ObsidianSurfaceHigh,
+    outline = ObsidianBorder,
+    outlineVariant = Color(0xFF1F2B47),
+    error = Color(0xFFFF526B),
+    onError = Color(0xFF2B0008)
 )
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit,
+    darkTheme: Boolean = true,
+    content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) CleanMinimalDarkColorScheme else CleanMinimalLightColorScheme
+    val colorScheme = if (darkTheme) TacticalDarkColorScheme else TacticalLightColorScheme
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window
+            if (window != null) {
+                @Suppress("DEPRECATION")
+                window.statusBarColor = Color.Transparent.toArgb()
+                @Suppress("DEPRECATION")
+                window.navigationBarColor = Color.Transparent.toArgb()
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.isAppearanceLightStatusBars = !darkTheme
+                insetsController.isAppearanceLightNavigationBars = !darkTheme
+            }
+        }
+    }
+
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
 }
-
-fun Modifier.tvFocusable(
-    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(8.dp),
-    borderColor: Color = Color(0xFF00FF41) // Neon Green
-): Modifier = composed {
-    var isFocused by remember { mutableStateOf(false) }
-    this
-        .onFocusChanged { isFocused = it.isFocused }
-        .focusable()
-        .border(
-            width = if (isFocused) 2.dp else 0.dp,
-            color = if (isFocused) borderColor else Color.Transparent,
-            shape = shape
-        )
-}
-
-
